@@ -1,0 +1,7 @@
+os_ssh_key_uploaded__username: "{{ dafrk__os.user.name }}"
+os_ssh_key_uploaded__user_password: "{{ dafrk__local_password | password_hash('sha512') }}"
+os_ssh_key_uploaded__group: "{{ dafrk__os.group.name }}"
+os_ssh_key_uploaded__user_home: "{{ ['/home', os_ssh_key_uploaded__username] | ansible.builtin.path_join }}"
+os_ssh_key_uploaded__user_home_ssh: "{{ [os_ssh_key_uploaded__user_home, '.ssh'] | ansible.builtin.path_join }}"
+os_ssh_key_uploaded__public_key: "{{ [os_ssh_key_uploaded__user_home_ssh, 'dafrk_2025.pub'] | ansible.builtin.path_join }}"
+os_ssh_key_uploaded__user_home_ssh_authorized_keys: "{{ [os_ssh_key_uploaded__user_home_ssh, 'authorized_keys'] | ansible.builtin.path_join }}"

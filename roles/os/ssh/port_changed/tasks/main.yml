@@ -1,0 +1,45 @@
+- name: Ensure SSH port is updated in sshd_config
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port\s+\d+'
+    line: 'Port {{ os_ssh_port_changed__port }}'
+    state: present
+  notify: Restart SSH
+
+- name: Ensure SSH service is enabled and started (systemd)
+  systemd:
+    name: "{{ sos_ssh_port_changed__ssh_service_name}}"
+    state: started
+    enabled: yes
+  when: os_ssh_port_changed__use_systemd
+
+- name: Ensure SSH service is enabled and started (service)
+  service:
+    name: "{{ os_ssh_port_changed__ssh_service_name }}"
+    state: started
+    enabled: yes
+  when: not os_ssh_port_changed__use_systemd
+
+# only if firewalld is configured and running. If not, dont do anything
+- name: Allow new SSH port in firewall
+  firewalld:
+    port: "{{ os_ssh_service_hardened__port }}/tcp"
+    permanent: yes
+    state: enabled
+  when: ansible_facts.services['firewalld.service'] is defined
+  notify: Reload Firewall
+
+- name: Remove default SSH port from firewall
+  firewalld:
+    port: 22/tcp
+    permanent: yes
+    state: disabled
+  when: ansible_facts.services['firewalld.service'] is defined
+  notify: Reload Firewall
+
+# Debug SSH Port changed
+- name: "Notify user that the SSHd port has changed"
+  ansible.builtin.debug:
+    msg: |
+      Please be aware that the SSH port has changed to {{ os_ssh_port_changed__port }}.
+      Change your SSH Client configuration accordingly.

@@ -1,0 +1,9 @@
+argument_specs:
+  main:
+    short_description: Get status of CoD1 Service
+    description: This role gets the status, hostname, IP addresses and Port of the server
+    options:
+      games_cod1_server_status__port:
+        type: str
+        required: true
+        description: Port under which the server is running

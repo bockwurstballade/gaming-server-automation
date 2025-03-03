@@ -1,0 +1,14 @@
+argument_specs:
+  main:
+    short_description: Verify SSH Port has changed successfully
+    options:
+      os_ssh_verify_port_changed__port:
+        description: The port number to configure SSH to listen on
+        type: int
+        required: false
+        default: "{{ dafrk__os.ssh.port | default(27001) }}"
+      os_ssh_verify_port_changed__hostname:
+        description: Hostname for Port check
+        type: str
+        required: false
+        default: localhost

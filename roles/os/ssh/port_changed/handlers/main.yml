@@ -1,0 +1,23 @@
+- name: Restart SSH (systemd)
+  systemd:
+    name: "{{ os_ssh_port_changed__ssh_service_name }}"
+    state: restarted
+  when: os_ssh_port_changed__use_systemd
+
+- name: Restart SSH (service)
+  service:
+    name: "{{ os_ssh_port_changed__ssh_service_name }}"
+    state: restarted
+  when: not os_ssh_port_changed__use_systemd
+
+- name: Reload Firewall (systemd)
+  systemd:
+    name: firewalld
+    state: reloaded
+  when: os_ssh_port_changed__use_systemd and ansible_facts.services['firewalld.service'] is defined
+
+- name: Reload Firewall (service)
+  service:
+    name: firewalld
+    state: reloaded
+  when: not os_ssh_port_changed__use_systemd and ansible_facts.services['firewalld.service'] is defined

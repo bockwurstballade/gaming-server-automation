@@ -1,0 +1,5 @@
+os_ssh_port_changed__port: "{{ dafrk__os.ssh.port | default(27001) }}"
+# Default SSH service name based on OS family
+os_ssh_port_changed__ssh_service_name: "{{ 'sshd' if ansible_os_family == 'RedHat' else 'ssh' }}"
+# Default to systemd if detected, otherwise fall back to service
+os_ssh_port_changed__use_systemd: "{{ ansible_service_mgr == 'systemd' }}"

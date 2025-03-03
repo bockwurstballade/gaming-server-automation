@@ -1,0 +1,26 @@
+argument_specs:
+  main:
+    short_description: Download a file from Google Drive with optional temporary directory
+    description:
+      - Downloads a file from a public Google Drive link, optionally using a temporary directory that is cleaned up afterward.
+    options:
+      utils_gdrive_download__temp_mode:
+        description:
+          - If true, creates a temporary directory for the download and removes it afterward.
+          - If false, the playbook assumes a persistent directory is handled elsewhere.
+        type: bool
+        required: false
+        default: false
+
+      utils_gdrive_download__file_id:
+        description:
+          - The Google Drive file ID from the shareable link (e.g., '1A2B3C4D5E6F7G8H9I').
+          - Used to construct the download URL.
+        type: str
+        required: false
+
+      utils_gdrive_download__file_name:
+        description:
+          - Filename of the file
+        type: str
+        required: false

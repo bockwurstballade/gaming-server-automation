@@ -1,0 +1,46 @@
+argument_specs:
+  main:  # This is the default entry point; you can add others like 'setup' if needed
+    short_description: "Manage SSH key upload for a user"
+    description: "This role configures SSH key upload by setting up directories and authorized keys for a specified user."
+    options:
+      os_ssh_key_uploaded__username:
+        type: "str"
+        required: false
+        default: "{{ dafrk__os.user.name }}"
+        description: "The username for which the SSH key will be uploaded."
+
+      os_ssh_key_uploaded__user_password:
+        type: "str"
+        required: false
+        default: "{{ dafrk__local_password }}"
+        description: "The password of the OS user, used for sudo -i"
+      
+      os_ssh_key_uploaded__group:
+        type: "str"
+        required: false
+        default: "{{ dafrk__os.group.name }}"
+        description: "The group associated with the user."
+      
+      os_ssh_key_uploaded__user_home:
+        type: "str"
+        required: false
+        default: "{{ ['/home', os_ssh_key_uploaded__username] | ansible.builtin.path_join }}"
+        description: "The home directory path for the user, constructed from /home and the username."
+      
+      os_ssh_key_uploaded__user_home_ssh:
+        type: "str"
+        required: false
+        default: "{{ [os_ssh_key_uploaded__user_home, '.ssh'] | ansible.builtin.path_join }}"
+        description: "The .ssh directory path within the user's home directory."
+      
+      os_ssh_key_uploaded__public_key:
+        type: "str"
+        required: false
+        default: "{{ [os_ssh_key_uploaded__user_home_ssh, 'dafrk_2025.pub'] | ansible.builtin.path_join }}"
+        description: "The path to the public key file (dafrk_2025.pub) in the .ssh directory."
+      
+      os_ssh_key_uploaded__user_home_ssh_authorized_keys:
+        type: "str"
+        required: false
+        default: "{{ [os_ssh_key_uploaded__user_home_ssh, 'authorized_keys'] | ansible.builtin.path_join }}"
+        description: "The path to the authorized_keys file in the .ssh directory."

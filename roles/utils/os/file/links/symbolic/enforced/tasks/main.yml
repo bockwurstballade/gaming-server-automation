@@ -1,0 +1,18 @@
+- name: debub symlinks
+  ansible.builtin.debug:
+    msg: "Symlinks: {{ utils_os_file_links_symbolic_enforced__links }}"
+
+- name: Ensure Symlinks
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    src: "{{ item.orig }}"
+    path: "{{ item.link }}"
+    state: link
+    force: true
+    owner: "{{ utils_os_file_links_symbolic_enforced__user }}"
+    group: "{{ utils_os_file_links_symbolic_enforced__group }}"
+  loop: "{{ utils_os_file_links_symbolic_enforced__links }}"
+  register: symlinkcreate
+  failed_when: symlinkcreate.failed
+  changed_when: symlinkcreate.changed

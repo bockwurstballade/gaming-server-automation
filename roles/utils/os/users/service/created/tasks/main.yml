@@ -7,9 +7,9 @@
         name: "{{ utils_os_users_service_created__group }}"
         state: present
 
-    - name: Ensure "{{ games_cs_1_6_server_installed__user }}" user exists
+    - name: Ensure "{{ utils_os_users_service_created__user }}" user exists
       ansible.builtin.user:
-        name: "{{ games_cs_1_6_server_installed__user }}"
+        name: "{{ utils_os_users_service_created__user }}"
         state: present
         group: "{{ utils_os_users_service_created__group }}"
         password: "{{ utils_os_users_service_created__password }}"

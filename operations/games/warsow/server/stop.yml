@@ -1,0 +1,22 @@
+# This playbook is used to stop Warsow Server Instances
+
+# Test SSH connectivity before running the playbook:
+# cd ~/ansible
+# ansible -i inventory/inventory.yml -k -u root all -m ping
+# Enter SSH root password...
+# Execute the playbook:
+# cd ~/ansible
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass operations/games/warsow/server/stop.yml
+# Stop all Warsow Instances
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass -e "service_name=all" operations/games/warsow/server/stop.yml
+# Stop only Warsow DM Instance
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass -e "service_name=dm" operations/games/warsow/server/stop.yml
+- hosts: all
+  vars_files:
+    - /home/dafrk/ansible/secrets/secrets.yml  # Explicitly include the vault file
+  vars:
+    ansible_become_pass: "{{ dafrk__local_password }}"
+    ansible_port: "{{ dafrk__os.ssh.port | default(27001) }}"
+    service_action: stopped
+  roles:
+    - roles/games/warsow/server/service

@@ -1,0 +1,16 @@
+# Test SSH connectivity before running the playbook:
+# cd ~/ansible
+# ansible -i inventory/inventory.yml -k -u root all -m ping
+# Enter SSH root password...
+# Execute the playbook:
+# cd ~/ansible
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass operations/games/cod1/server/start.yml
+- hosts: all
+  vars_files:
+    - /home/dafrk/ansible/secrets/secrets.yml  # Explicitly include the vault file
+  vars:
+    ansible_become_pass: "{{ dafrk__local_password }}"
+    ansible_port: "{{ dafrk__os.ssh.port | default(27001) }}"
+    action: restarted
+  roles:
+    - roles/games/cod2/server/service

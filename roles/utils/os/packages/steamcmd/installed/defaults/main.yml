@@ -1,0 +1,12 @@
+utils_os_packages_steamcmd_installed__packages:
+  - software-properties-common
+  - acl
+
+# Users and Groups
+utils_os_packages_steamcmd_installed__group: "{{ group_name | default('steam') }}"
+utils_os_packages_steamcmd_installed__user: "{{ user | default('steam') }}"
+utils_os_packages_steamcmd_installed__password: "{{ service_user_pw | password_hash('sha512') }}"
+
+# Directories
+utils_os_packages_steamcmd_installed__home: "{{ ('/', 'home', 'steam') | ansible.builtin.path_join }}"
+utils_os_packages_steamcmd_installed__steamcmd: "{{ ('/', 'opt', 'steamcmd') | ansible.builtin.path_join }}"

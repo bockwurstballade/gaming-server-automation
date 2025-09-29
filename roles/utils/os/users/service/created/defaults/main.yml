@@ -1,0 +1,2 @@
+utils_os_users_service_created__password: "{{ service_user_pw | password_hash('sha512') }}"
+utils_os_users_service_created__service_user_home: "{{ ('/', 'home', utils_os_users_service_created__user) | ansible.builtin.path_join }}"

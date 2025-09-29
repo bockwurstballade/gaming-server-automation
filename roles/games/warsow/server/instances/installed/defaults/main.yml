@@ -1,0 +1,15 @@
+
+# User and Group
+games_warsow_server_instances_installed__user_name: "{{ dafrk__warsow_server.user.name | default('warsow') }}"
+games_warsow_server_instances_installed__group_name: "{{ dafrk__warsow_server.group.name | default('warsow') }}"
+
+# Directories
+games_warsow_server_instances_installed__directory: "{{ dafrk__warsow_server.directories.warsow_server.path | default('/games/warsow/') }}"
+games_warsow_server_instances_installed__basewsw: "{{ dafrk__warsow_server.directories.basewsw.path | default('/games/warsow/basewsw') }}"
+# Instances
+games_warsow_server_instances_installed__instances: "{{ dafrk_warsow_server_instances }}"
+
+# Global Server Settings
+games_warsow_server_instances_installed__public_ip: "{{ dafrk__os.network.public_ipv4.address | default('0.0.0.0', true) }}"
+games_warsow_server_instances_installed__rcon_password: "{{ rcon_password }}"
+games_warsow_server_instances_installed__server_password: "{{ server_password }}"

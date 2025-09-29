@@ -1,0 +1,5 @@
+games_cod2_server_libcod_installed__directory: "{{ dafrk__cod2_server.directories.cod2_server.path | default('/games/cod2/') }}"
+games_cod2_server_libcod_installed__file_id: "{{ dafrk__cod2_server.files.libcod.file_id }}"
+games_cod2_server_libcod_installed__file_name: "{{ dafrk__cod2_server.files.libcod.file_name | default('libcod2_1_3.so') }}"
+games_cod2_server_libcod_installed__owner: "{{ dafrk__cod2_server.user.name | default('cod2') }}"
+games_cod2_server_libcod_installed__group: "{{ dafrk__cod2_server.group.name | default('cod2')  }}"

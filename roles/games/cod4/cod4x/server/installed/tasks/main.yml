@@ -1,0 +1,17 @@
+- name: Ensure CoD4x Server is installed
+  become: true
+  become_user: root
+  block:
+    - name: Install required 32-bit libraries
+      ansible.builtin.apt:
+        name:
+          - libc6:i386
+          - libncurses5:i386
+          - libstdc++6:i386
+          - glibc-devel
+          - glibc-devel.i686
+          - libgcc.i686
+          - libstdc++-devel.i686
+          - nasm
+        state: present
+        update_cache: yes

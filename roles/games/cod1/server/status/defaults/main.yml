@@ -1,0 +1,4 @@
+# Server Settings
+games_cod1_server_status__port: "{{ dafrk__cod_server.instance_no_1.port if cd_check | default(true) else dafrk__cod_server.instance_no_2.port }}"
+games_cod1_server_status__cd_check:  "{{ cd_check | default(true, true) }}"
+games_cod1_server_status__name: "{{ 'cod1' if cd_check | default(true) else 'cod1_no_cd' }}"

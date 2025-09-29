@@ -1,0 +1,3 @@
+os_ssh_port_change_verified__port: "{{ dafrk__os.ssh.port | default(27001) }}"
+os_ssh_port_change_verified__hostname: localhost
+

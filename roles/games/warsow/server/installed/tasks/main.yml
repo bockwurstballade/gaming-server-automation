@@ -1,0 +1,134 @@
+- name: Ensure Warsow Server is installed
+  become: true
+  become_user: root
+  block:
+  - name: Ensure Warsow Archive is downloaded
+    ansible.builtin.include_role:
+      name: roles/utils/gdrive/download
+    vars:
+      utils_gdrive_download__file_id: "{{ games_warsow_server_installed__server_archive.id }}"
+      utils_gdrive_download__file_name: "{{ games_warsow_server_installed__server_archive.file_name }}"
+      utils_gdrive_download__dest: "{{ games_warsow_server_installed__dl_dest }}"
+      utils_gdrive_download__temp_mode: "{{ games_warsow_server_installed__temp_mode | default(false) }}"
+
+  - name: "Ensure Service User Group {{ games_warsow_server_installed__group_name }} exists"
+    become: true
+    become_user: root
+    ansible.builtin.group:
+      name: "{{ games_warsow_server_installed__group_name }}"
+      state: present
+
+  - name: Ensure "{{ games_warsow_server_installed__user_name }}" user exists
+    become: true
+    become_user: root
+    ansible.builtin.user:
+      name: "{{ games_warsow_server_installed__user_name }}"
+      state: present
+      group: "{{ games_warsow_server_installed__group_name }}"
+      password: "{{ games_warsow_server_installed__user_password }}"
+      shell: /bin/bash
+      home: "{{ games_warsow_server_installed__service_user_home }}"
+      create_home: true
+
+  - name: Ensure /games/ directory exists
+    become: true
+    become_user: root
+    ansible.builtin.file:
+      path:  "/games/"
+      state: directory
+      mode: '0755'
+      owner: "{{ games_warsow_server_installed__user_name }}"
+      group: users
+
+  - name: "Ensure Server directory exists"
+    become: true
+    become_user: root
+    ansible.builtin.file:
+      path: "{{ games_warsow_server_installed__directory }}"
+      state: directory
+      mode: '0750'
+      owner: "{{ games_warsow_server_installed__user_name }}"
+      group: "{{ games_warsow_server_installed__group_name }}"
+
+  - name: Ensure LD_LIBRARY_PATH is set in .bashrc
+    ansible.builtin.lineinfile:
+      path: "{{ (games_warsow_server_installed__service_user_home, '.bashrc') | ansible.builtin.path_join }}"
+      regexp: '^export LD_LIBRARY_PATH=.*$'
+      line: 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib:/lib64:/games/warsow"'
+      state: present
+      owner: "{{ games_warsow_server_installed__user_name }}"
+      group: "{{ games_warsow_server_installed__group_name }}"
+
+  - name: Ensure PATH is set in .bashrc
+    ansible.builtin.lineinfile:
+      path: "{{ (games_warsow_server_installed__service_user_home, '.bashrc') | ansible.builtin.path_join }}"
+      regexp: '^export PATH=.*$'
+      line: 'export PATH="$PATH:/games/warsow"'
+      state: present
+      owner: "{{ games_warsow_server_installed__user_name }}"
+      group: "{{ games_warsow_server_installed__group_name }}"
+
+
+  - name: "Ensure Warsow Server is extracted to {{ games_warsow_server_installed__directory }}"
+    ansible.builtin.unarchive:
+      src: "{{ (games_warsow_server_installed__dl_dest, games_warsow_server_installed__server_archive_name) | ansible.builtin.path_join }}"
+      dest: "{{ [games_warsow_server_installed__directory] | ansible.builtin.path_join }}"
+      mode: '0775'
+      extra_opts:
+        - --strip-components=1
+      remote_src: true
+
+  - name: Ensure File Permissions
+    ansible.builtin.file:
+      path: "{{ games_warsow_server_installed__directory }}"
+      state: directory
+      mode: '0750'
+      owner: "{{ games_warsow_server_installed__user_name }}"
+      group: "{{ games_warsow_server_installed__group_name }}"
+      recurse: true
+
+  - name: Update apt package cache
+    ansible.builtin.apt:
+      update_cache: yes
+      # This prevents updating the cache on every run if it's less than an hour old.
+      cache_valid_time: 3600
+
+  - name: Ensure required libraries are installed
+    ansible.builtin.apt:
+      name: "{{ item }}"
+      state: present
+    loop:
+      "{{ games_warsow_server_installed_libraries }}"
+
+  - name: Ensure dedicated_autoexec.cfg exists with correct content
+    ansible.builtin.template:
+      src: templates/games/warsow/basewsw/{{ games_warsow_server_installed__autoexec }}.j2
+      dest: "{{ (games_warsow_server_installed__basewsw, games_warsow_server_installed__autoexec) | ansible.builtin.path_join }}"
+      owner: "{{ games_warsow_server_installed__user_name }}"
+      group: "{{ games_warsow_server_installed__group_name }}"
+      mode: '0644'
+      backup: yes
+
+  - name: "Create systemd service file for {{ games_warsow_server_installed__service_name }}"
+    ansible.builtin.copy:
+      dest: "/etc/systemd/system/{{ games_warsow_server_installed__service_name }}.service"
+      content: |
+        [Unit]
+        Description={{ games_warsow_server_installed__service_description }}
+        After=network.target
+
+        [Service]
+        User={{ games_warsow_server_installed__user_name }}
+        Group={{ games_warsow_server_installed__group_name }}
+        WorkingDirectory={{ games_warsow_server_installed__directory }}
+        Environment="LD_LIBRARY_PATH=/lib:/lib64:{{ games_warsow_server_installed__directory }}"
+        ExecStart={{ games_warsow_server_installed__directory }}/wsw_server +set fs_basepath {{ games_warsow_server_installed__directory }} +set ttycon 0
+        Restart=on-failure
+        Type=simple
+        KillMode=process
+
+        [Install]
+        WantedBy=multi-user.target
+      owner: root
+      group: root
+      mode: '0644'

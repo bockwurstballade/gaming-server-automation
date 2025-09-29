@@ -1,0 +1,11 @@
+- name: Ensure libcod is downloaded
+  ansible.builtin.include_role:
+    name: roles/utils/gdrive/download
+  vars:
+    utils_gdrive_download__file_id: "{{ games_cod2_server_libcod_installed__file_id }}"
+    utils_gdrive_download__file_name: "{{ games_cod2_server_libcod_installed__file_name }}"
+    utils_gdrive_download__temp_mode: false
+    utils_gdrive_download__dest: "{{ games_cod2_server_libcod_installed__directory }}"
+    utils_gdrive_download__owner: "{{ games_cod2_server_libcod_installed__owner }}"
+    utils_gdrive_download__group: "{{ games_cod2_server_libcod_installed__group }}"
+    utils_gdrive_download__mode: "0750"

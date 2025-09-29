@@ -1,0 +1,41 @@
+- name: Ensure required packages are installed
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    "{{ utils_os_packages_steamcmd_app_installed__packages }}"
+
+- name: Ensure Intended Target Directory exists
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    path: "{{ utils_os_packages_steamcmd_app_installed__dest }}"
+    state: directory
+    owner: "{{ utils_os_packages_steamcmd_app_installed__user }}"
+    group: "{{ utils_os_packages_steamcmd_app_installed__group }}"
+  register: steamcmd_dir
+  failed_when: steamcmd_dir.failed
+  changed_when: steamcmd_dir.changed
+
+- name: "Install App {{ utils_os_packages_steamcmd_app_installed__app_name }} using steamcmd"
+  become: true
+  become_user: "{{ utils_os_packages_steamcmd_app_installed__user }}"
+  # Missing File Permissions Error: must be done with user steam, not as root
+  ansible.builtin.command:
+    cmd: >-
+      /opt/steamcmd/steamcmd.sh
+      +force_install_dir
+      {{ utils_os_packages_steamcmd_app_installed__dest }}
+      +login
+      anonymous
+      +app_update
+      {{ utils_os_packages_steamcmd_app_installed__app_id }}
+      validate
+      +quit
+    chdir: "{{ utils_os_packages_steamcmd_app_installed__steamcmd }}"
+  register: steamcmd_install
+  failed_when: steamcmd_install.failed
+  changed_when: steamcmd_install.changed

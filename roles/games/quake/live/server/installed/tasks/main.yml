@@ -1,0 +1,233 @@
+- name: Install Quake Live Server
+  become: true
+  become_user: root
+  block:
+    # Install steamcmd https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+    - name: "Ensure Service User Group {{ games_quake_live_server_installed__steam_group_name }} exists"
+      become: true
+      become_user: root
+      ansible.builtin.group:
+        name: "{{ games_quake_live_server_installed__steam_group_name }}"
+        state: present
+
+    - name: "Ensure user {{ games_quake_live_server_installed__steam_user }} is created"
+      ansible.builtin.user:
+        name: "{{ games_quake_live_server_installed__steam_user }}"
+        state: present
+        group: "{{ games_quake_live_server_installed__steam_group_name }}"
+        password: "{{ games_quake_live_server_installed__user_password }}"
+        shell: /bin/bash
+        home: "{{ games_quake_live_server_installed__steam_user_home }}"
+        create_home: true
+
+    - name: Ensure contrib and non-free components are enabled
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list
+        # This regex finds the main debian repo line for your release (e.g., bookworm, bullseye)
+        regexp: '^(deb\s+.*?\s+{{ ansible_distribution_release }}\s+main)$'
+        # It then appends 'contrib' and 'non-free' to that line
+        line: '\1 contrib non-free'
+        backrefs: yes
+        state: present
+
+    - name: Ensure software-properties-common is installed
+      ansible.builtin.apt:
+        name: software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add non-free packages
+      ansible.builtin.command:
+        cmd: >-
+          apt-add-repository
+          non-free
+          -y
+      register: repoadd
+      changed_when: repoadd.changed
+      failed_when: repoadd.failed
+
+    - name: Check for existing foreign architectures
+      ansible.builtin.command:
+        cmd: dpkg --print-foreign-architectures
+      register: foreign_archs
+      changed_when: false
+      check_mode: false
+
+    - name: Add i386 architecture for 32-bit compatibility
+      ansible.builtin.command:
+        cmd: dpkg --add-architecture i386
+      when: "'i386' not in foreign_archs.stdout"
+      changed_when: true
+
+    - name: Update apt
+      ansible.builtin.command:
+        cmd: >-
+          apt
+          update
+
+    - name: Update apt package cache
+      ansible.builtin.apt:
+        update_cache: yes
+        # This prevents updating the cache on every run if it's less than an hour old.
+        cache_valid_time: 3600
+
+    - name: Ensure required packages are installed
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        "{{ games_quake_live_server_installed_packages }}"
+
+    - name: Ensure target directory for steamcmd exists
+      ansible.builtin.file:
+        path: "{{ games_quake_live_server_installed__steamcmd }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ games_quake_live_server_installed__steam_user }}"
+        group: "{{ games_quake_live_server_installed__steam_group_name }}"
+
+    - name: Download and unarchive SteamCMD
+      ansible.builtin.unarchive:
+        src: https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+        dest: "{{ games_quake_live_server_installed__steamcmd }}"
+        remote_src: yes
+
+    - name: Ensure file permissions for steamcmd
+      ansible.builtin.file:
+        path: "{{ games_quake_live_server_installed__steamcmd }}"
+        state: directory
+        mode: '0750'
+        recurse: true
+        owner: "{{ games_quake_live_server_installed__steam_user }}"
+        group: "{{ games_quake_live_server_installed__steam_group_name }}"
+
+    # Install QL Server
+    - name: "Ensure Service User Group {{ games_quake_live_server_installed__group_name }} exists"
+      become: true
+      become_user: root
+      ansible.builtin.group:
+        name: "{{ games_quake_live_server_installed__group_name }}"
+        state: present
+
+    - name: Ensure "{{ games_quake_live_server_installed__user_name }}" user exists
+      become: true
+      become_user: root
+      ansible.builtin.user:
+        name: "{{ games_quake_live_server_installed__user_name }}"
+        state: present
+        group: "{{ games_quake_live_server_installed__group_name }}"
+        password: "{{ games_quake_live_server_installed__user_password }}"
+        shell: /bin/bash
+        home: "{{ games_quake_live_server_installed__service_user_home }}"
+        create_home: true
+
+    - name: Ensure /games/ directory exists
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path:  "/games/"
+        state: directory
+        mode: '0755'
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: users
+
+    - name: "Ensure Server directory exists"
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: "{{ games_quake_live_server_installed__directory }}"
+        state: directory
+        mode: '0770'
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: "{{ games_quake_live_server_installed__group_name }}"
+
+    - name: Install Quake Live Dedicated Server
+      become: true
+      become_user: "{{ games_quake_live_server_installed__steam_user }}"
+      # Missing File Permissions Error: must be done with user steam, not as root
+      ansible.builtin.command:
+        cmd: >-
+          /opt/steamcmd/steamcmd.sh
+          +force_install_dir
+          {{ games_quake_live_server_installed__directory }}
+          +login
+          anonymous
+          +app_update
+          349090
+          +quit
+        chdir: "{{ games_quake_live_server_installed__steamcmd }}"
+      register: steamcmd_ql
+      failed_when: steamcmd_ql.failed
+      changed_when: steamcmd_ql.changed
+
+    - name: "Ensure Server directory file permissions exists"
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: "{{ games_quake_live_server_installed__directory }}"
+        state: directory
+        mode: '0770'
+        recurse: true
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: "{{ games_quake_live_server_installed__group_name }}"
+
+    - name: Ensure LD_LIBRARY_PATH is set in .bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ (games_quake_live_server_installed__service_user_home, '.bashrc') | ansible.builtin.path_join }}"
+        regexp: '^export LD_LIBRARY_PATH=.*$'
+        line: 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib:/lib64:/games/quake_live/linux64"'
+        state: present
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: "{{ games_quake_live_server_installed__group_name }}"
+
+    - name: Ensure PATH is set in .bashrc
+      ansible.builtin.lineinfile:
+        path: "{{ (games_quake_live_server_installed__service_user_home, '.bashrc') | ansible.builtin.path_join }}"
+        regexp: '^export PATH=.*$'
+        line: 'export PATH="$PATH:/games/quake_live"'
+        state: present
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: "{{ games_quake_live_server_installed__group_name }}"
+
+    - name: "Ensure {{ games_quake_live_server_installed__servercfg }} exists with correct content"
+      ansible.builtin.template:
+        src: templates/games/quake_live/baseq3/{{ games_quake_live_server_installed__servercfg }}.j2
+        dest: "{{ (games_quake_live_server_installed__baseq3, games_quake_live_server_installed__servercfg) | ansible.builtin.path_join }}"
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: "{{ games_quake_live_server_installed__group_name }}"
+        mode: '0640'
+        backup: yes
+
+    - name: "Ensure access.txt exists with correct content"
+      ansible.builtin.template:
+        src: templates/games/quake_live/baseq3/access.txt.j2
+        dest: "{{ (games_quake_live_server_installed__baseq3, 'access.txt') | ansible.builtin.path_join }}"
+        owner: "{{ games_quake_live_server_installed__user_name }}"
+        group: "{{ games_quake_live_server_installed__group_name }}"
+        mode: '0640'
+        backup: yes
+
+    - name: "Create systemd service file for quake live"
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ games_quake_live_server_installed__service_name }}.service"
+        content: |
+          [Unit]
+          Description={{ games_quake_live_server_installed__service_description }}
+          After=network.target
+
+          [Service]
+          User={{ games_quake_live_server_installed__user_name }}
+          Group={{ games_quake_live_server_installed__group_name }}
+          WorkingDirectory={{ games_quake_live_server_installed__directory }}
+          Environment="LD_LIBRARY_PATH=/lib:/lib64:{{ games_quake_live_server_installed__directory }}linux64"
+          ExecStart={{ games_quake_live_server_installed__directory }}qzeroded.x64 +set fs_basepath {{ games_quake_live_server_installed__directory }} +set fs_homepath {{ games_quake_live_server_installed__service_user_home }}/.quakelive +set ttycon 0
+          Restart=on-failure
+          Type=simple
+          KillMode=process
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'

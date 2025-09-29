@@ -1,0 +1,7 @@
+utils_gdrive_download__file_id: "{{ file_id | default('') }}"
+utils_gdrive_download__file_name: "{{ file_name | default('') }}"
+utils_gdrive_download__temp_mode: "{{ temp_or_permanent | default(true) }}"
+utils_gdrive_download__dest: "{{ dest | default('/tmp/') }}"
+utils_gdrive_download__mode: "{{ mode | default('0644') }}"
+utils_gdrive_download__owner: "{{ mode | default('root') }}"
+utils_gdrive_download__group: "{{ mode | default('root') }}"

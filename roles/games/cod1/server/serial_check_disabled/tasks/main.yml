@@ -1,0 +1,33 @@
+- name: Set IPTable Rules to disable CD Check
+  become: true
+  become_user: root
+  when: games_cod1_server_serial_check_disabled__cd_check  # Only run if variable is true
+  block:
+    - name: Ensure iptables is installed
+      ansible.builtin.package:
+        name: iptables
+        state: present
+    
+    - name: Add iptables rule to drop packets containing 'INVALID_CDKEY'
+      ansible.builtin.command:
+        cmd: iptables -A INPUT -p udp -m string --algo bm --string "INVALID_CDKEY" --sport 20500 --dport {{ games_cod1_server_serial_check_disabled__port }} -j DROP
+
+    - name: Ensure netfilter-persistent is installed (Debian/Ubuntu specific)
+      ansible.builtin.package:
+        name: netfilter-persistent
+        state: present
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+    - name: Add iptables rule to drop packets containing 'BANNED_CDKEY'
+      ansible.builtin.command:
+        cmd: iptables -A INPUT -p udp -m string --algo bm --string "BANNED_CDKEY" --sport 20500 --dport {{ games_cod1_server_serial_check_disabled__port }} -j DROP
+
+    - name: Save iptables rules (for persistence across reboots)
+      ansible.builtin.command:
+        cmd: service iptables save
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+
+    - name: Save iptables rules (Debian/Ubuntu specific)
+      ansible.builtin.command:
+        cmd: netfilter-persistent save
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'

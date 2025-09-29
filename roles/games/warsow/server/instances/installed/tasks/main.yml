@@ -1,0 +1,39 @@
+- name: Install Warsow Server Instances
+  become: true
+  become_user: root
+  block:
+
+  - name: Ensure cfg Files exist with correct content
+    ansible.builtin.template:
+      src: templates/games/warsow/basewsw/warsow_server.cfg.j2
+      dest: "{{ (games_warsow_server_instances_installed__basewsw, item.cfg + '.cfg' ) | ansible.builtin.path_join }}"
+      owner: "{{ games_warsow_server_instances_installed__user_name }}"
+      group: "{{ games_warsow_server_instances_installed__group_name }}"
+      mode: '0644'
+      backup: yes
+    loop: "{{ games_warsow_server_instances_installed__instances }}"
+
+  - name: "Create systemd service file"
+    ansible.builtin.copy:
+      dest: "/etc/systemd/system/warsow_{{ item.cfg }}.service"
+      content: |
+        [Unit]
+        Description=Warsow {{ item.name }} Server
+        After=network.target
+
+        [Service]
+        User={{ games_warsow_server_instances_installed__user_name }}
+        Group={{ games_warsow_server_instances_installed__group_name }}
+        WorkingDirectory={{ games_warsow_server_instances_installed__directory }}
+        Environment="LD_LIBRARY_PATH=/lib:/lib64:{{ games_warsow_server_instances_installed__directory }}"
+        ExecStart={{ games_warsow_server_instances_installed__directory }}/wsw_server +set fs_basepath {{ games_warsow_server_instances_installed__directory }} +exec {{ item.cfg }}.cfg +set ttycon 0
+        Restart=on-failure
+        Type=simple
+        KillMode=process
+
+        [Install]
+        WantedBy=multi-user.target
+      owner: root
+      group: root
+      mode: '0644'
+    loop: "{{ games_warsow_server_instances_installed__instances }}"

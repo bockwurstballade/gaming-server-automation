@@ -1,0 +1,81 @@
+- name: Ensure Update APT package cache on local control node
+  delegate_to: localhost
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Upgrade all installed packages
+  delegate_to: localhost
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    upgrade: dist
+    # This runs "apt-get upgrade -y" (dist ensures a full upgrade)
+
+- name: Ensure sshpass is installed on control node via apt-get
+  delegate_to: localhost
+  become: true
+  become_user: root
+  ansible.builtin.apt:
+    name: sshpass
+    state: present   # Ensures the package is installed
+    update_cache: yes  # Updates the apt cache before installing
+
+- name: Ensure "{{ os_ssh_key_uploaded__username }}" user exists
+  ansible.builtin.user:
+    name: "{{ os_ssh_key_uploaded__username }}"
+    state: present
+    group: "{{ os_ssh_key_uploaded__group }}"
+    password: "{{ os_ssh_key_uploaded__user_password }}"
+    shell: /bin/bash
+    create_home: yes  # Creates home directory
+    home: "{{ os_ssh_key_uploaded__user_home }}"
+
+- name: Ensure .ssh directory exists
+  ansible.builtin.file:
+    path:  "{{ os_ssh_key_uploaded__user_home_ssh }}"
+    state: directory
+    mode: '0700'
+    owner: "{{ os_ssh_key_uploaded__username }}"
+    group: "{{ os_ssh_key_uploaded__group }}"
+
+- name: Upload public SSH key from local system to remote server
+  ansible.builtin.copy:
+    src: "{{ os_ssh_key_uploaded__public_key }}" # Path on Ansible control node (your local system)
+    dest: "{{ os_ssh_key_uploaded__user_home_ssh_authorized_keys }}"  # Path on remote server
+    mode: '0600'
+    owner: "{{ os_ssh_key_uploaded__username }}"
+    group: "{{ os_ssh_key_uploaded__group }}"
+
+- name: Ensure proper permissions for authorized_keys on remote server
+  ansible.builtin.file:
+    path: "{{ os_ssh_key_uploaded__user_home_ssh_authorized_keys }}" 
+    mode: '0600'
+    owner: "{{ os_ssh_key_uploaded__username }}"
+    group: "{{ os_ssh_key_uploaded__group }}"
+
+- name: Ensure user "{{ os_ssh_key_uploaded__username }}" has sudo privileges
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^{{ os_ssh_key_uploaded__username }}\s+ALL='
+    line: '{{ os_ssh_key_uploaded__username }} ALL=(ALL) ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+    state: present
+  register: sudoers_result
+
+- name: Debug sudoers change
+  ansible.builtin.debug:
+    msg: "Sudoers file updated for {{ os_ssh_key_uploaded__username }}."
+  when: sudoers_result.changed
+
+- name: Instruct end user on next steps
+  ansible.builtin.debug:
+    msg: |
+      Key has been successfully deployed to remote server
+      Next steps:
+      1. Try if you can properly login to remote server as user {{ os_ssh_key_uploaded__username }}
+         with the private key
+      2. Check if you can become "root" via "sudo -i".
+         It is expected that you then must enter the password of {{ os_ssh_key_uploaded__username }}
+      3. If that works properly, execute os/ssh/harden_ssh next

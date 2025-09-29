@@ -1,0 +1,31 @@
+# Verification tasks
+- name: Ensure SSH is started and listening on desired port "{{ os_ssh_port_change_verified__port }}"
+  ansible.builtin.wait_for:
+    host: "{{ os_ssh_port_change_verified__hostname }}"
+    port: "{{ os_ssh_port_change_verified__port }}"
+    state: started
+    timeout: 30
+  register: ssh_listen_result
+  retries: 5
+  delay: 5
+  until: ssh_listen_result.state is defined and ssh_listen_result.state == 'started'
+
+- name: Verify SSH port "{{ os_ssh_port_change_verified__port }}" is reachable from control node
+  ansible.builtin.wait_for:
+    host: "{{ inventory_hostname }}"
+    port: "{{ os_ssh_port_change_verified__port }}"
+    state: started
+    timeout: 30
+  delegate_to: localhost
+  register: ssh_reachable_result
+  retries: 5
+  delay: 5
+  until: ssh_reachable_result.state is defined and ssh_reachable_result.state == 'started'
+  failed_when: ssh_reachable_result.state is undefined
+
+# Debug SSH Port changed
+- name: "Notify user that the SSHd port has changed"
+  ansible.builtin.debug:
+    msg: |
+      Please be aware that the SSH port has changed to {{ os_ssh_port_change_verified__port }}.
+      Change your SSH Client configuration accordingly.

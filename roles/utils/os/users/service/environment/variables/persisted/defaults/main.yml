@@ -1,0 +1,19 @@
+utils_os_users_service_environment_variables_persisted__home: "{{ ('/', 'home', utils_os_users_service_environment_variables_persisted__user) | ansible.builtin.path_join }}"
+utils_os_users_service_environment_variables_persisted__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ utils_os_users_service_environment_variables_persisted__service_dir }}"
+ - "{{ utils_os_users_service_environment_variables_persisted__service_lib_subdir | default('') }}"
+ - "{{ utils_os_users_service_environment_variables_persisted__home }}"
+ - "{{ utils_os_users_service_environment_variables_persisted__home_subdir | default('') }}"
+utils_os_users_service_environment_variables_persisted__ld_library_path_string: "{{ (utils_os_users_service_environment_variables_persisted__ld_library_path_dirs + (ansible_env.LD_LIBRARY_PATH | default('') | split(':'))) | unique | join(':') }}"
+utils_os_users_service_environment_variables_persisted__path_dirs:
+  - "/usr/local/bin"
+  - "/usr/bin"
+  - "/bin"
+  - "/usr/local/games"
+  - "/usr/games"
+  - "{{ utils_os_users_service_environment_variables_persisted__service_dir }}"
+utils_os_users_service_environment_variables_persisted__path_string: "{{ (utils_os_users_service_environment_variables_persisted__path_dirs + (ansible_env.PATH | default('') | split(':'))) | unique | join(':') }}"

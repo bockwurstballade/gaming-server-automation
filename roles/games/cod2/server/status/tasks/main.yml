@@ -1,0 +1,32 @@
+- name: Get cod2 service status
+  become: true
+  become_user: root
+  ansible.builtin.shell: systemctl status cod2
+  register: service_status
+  changed_when: false
+  failed_when: false
+
+- name: Debug output
+  ansible.builtin.debug:
+    msg: "Output: {{ service_status }}"
+
+- name: Extract hostname from service status
+  ansible.builtin.set_fact:
+    cod1_hostname: "{{ (service_status.stdout | regex_search('Hostname: (.*)', '\\1') | list | first) if (service_status.stdout is defined and service_status.stdout | regex_search('Hostname: (.*)')) else 'not found' }}"
+  when: service_status.rc is defined
+
+- name: Extract IP addresses from service status
+  ansible.builtin.set_fact:
+    cod2_ip1: "{{ (service_status.stdout | regex_search('IP: (\\d+\\.\\d+\\.\\d+\\.\\d+)', '\\1') | list | first) if (service_status.stdout is defined and service_status.stdout | regex_search('IP: (\\d+\\.\\d+\\.\\d+\\.\\d+)')) else 'not found' }}"
+    cod2_ip2: "{{ (service_status.stdout | regex_search('IP: \\d+\\.\\d+\\.\\d+\\.\\d+\\n.*IP: (\\d+\\.\\d+\\.\\d+\\.\\d+)', '\\1') | list | first) if (service_status.stdout is defined and service_status.stdout | regex_search('IP: \\d+\\.\\d+\\.\\d+\\.\\d+\\n.*IP: (\\d+\\.\\d+\\.\\d+\\.\\d+)')) else 'not found' }}"
+  when: service_status.rc is defined
+
+- name: Display server information
+  ansible.builtin.debug:
+    msg: |
+      Server Information:
+      Hostname: {{ cod1_hostname }}
+      IP Address 1: {{ cod2_ip1 }}
+      IP Address 2: {{ cod2_ip2 }}
+      Port: {{ games_cod2_server_status__port }}
+      Command to Join: /connect {{ cod2_ip2 }}:{{ games_cod2_server_status__port }}

@@ -1,0 +1,103 @@
+- name: Ensure pip is installed
+  become: true
+  become_user: root
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+
+- name: Ensure python3-venv is installed
+  become: true
+  become_user: root
+  ansible.builtin.package:
+    name: python3-venv
+    state: present
+
+- name: Create virtual environment
+  become: true
+  become_user: root
+  ansible.builtin.command: python3 -m venv /opt/gdown_venv
+  args:
+    creates: /opt/gdown_venv
+
+- name: Upgrade pip to latest version
+  become: true
+  become_user: root
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+    virtualenv: /opt/gdown_venv
+
+- name: Ensure gdown package is installed
+  become: true
+  become_user: root
+  ansible.builtin.pip:
+    name: gdown
+    virtualenv: /opt/gdown_venv
+    state: present
+
+- name: Create symlink for easy access (optional)
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    src: /opt/gdown_venv/bin/gdown
+    dest: /usr/local/bin/gdown
+    state: link
+
+- name: Download file from Google Drive into temp directory
+  when: utils_gdrive_download__temp_mode == true
+  block:
+  - name: Ensure presence of download directory (if temp mode)
+    ansible.builtin.tempfile:
+      state: directory
+      suffix: "_download"
+    register: utils_gdrive_download__temp_dir
+
+  - name: Promote temp_dir to a higher scope
+    ansible.builtin.set_fact:
+      utils_gdrive_download__temp_dir: "{{ utils_gdrive_download__temp_dir }}"
+
+  - name: Debug Temporary Directory creation
+    ansible.builtin.debug:
+      msg: "Created temproary directory {{ utils_gdrive_download__temp_dir.path }}"
+
+  - name: Ensure file is downloaded to temporary directory
+    ansible.builtin.command:
+      cmd: "gdown https://drive.google.com/uc?id={{ utils_gdrive_download__file_id }} -O {{ [utils_gdrive_download__temp_dir.path, utils_gdrive_download__file_name] | ansible.builtin.path_join }}"
+      creates: "{{ [utils_gdrive_download__temp_dir.path, utils_gdrive_download__file_name] | ansible.builtin.path_join }}"
+    register: gdrive_download__download_result
+
+- name: "Download file from Google drive to {{ utils_gdrive_download__dest }}"
+  when: utils_gdrive_download__temp_mode == false
+  become: true
+  become_user: root
+  block:
+  - name: Ensure presence of target directory
+    ansible.builtin.file:
+      path: "{{ utils_gdrive_download__dest }}"
+      state: directory
+
+  - name: "Ensure file {{ utils_gdrive_download__file_name }} is downloaded to target directory {{ utils_gdrive_download__dest }}"
+    ansible.builtin.command:
+      cmd: "gdown https://drive.google.com/uc?id={{ utils_gdrive_download__file_id }} -O {{ [utils_gdrive_download__dest, utils_gdrive_download__file_name] | ansible.builtin.path_join }}"
+      creates: "{{ [utils_gdrive_download__dest, utils_gdrive_download__file_name] | ansible.builtin.path_join }}"
+    register: gdrive_download__download_result
+
+  - name: "Ensure file permissions of {{ utils_gdrive_download__file_name }}"
+    ansible.builtin.file:
+      path: "{{ [utils_gdrive_download__dest, utils_gdrive_download__file_name] | ansible.builtin.path_join }}"
+      state: file
+      owner: "{{ utils_gdrive_download__owner }}"
+      group: "{{ utils_gdrive_download__group }}"
+      mode: "{{ utils_gdrive_download__mode }}"
+
+
+#- name: Ensure file is downloaded to temporary directory
+#  ansible.builtin.get_url:
+#    url: "https://drive.google.com/uc?export=download&confirm=t&id={{ utils_gdrive_download__file_id }}"
+#    dest: "{{ [utils_gdrive_download__temp_dir.path, utils_gdrive_download__file_name] | ansible.builtin.path_join }}"
+#    mode: "0644"
+#  register: gdrive_download__download_result
+
+- name: Debug download result
+  ansible.builtin.debug:
+    msg: "File downloaded to {{ gdrive_download__download_result }}"

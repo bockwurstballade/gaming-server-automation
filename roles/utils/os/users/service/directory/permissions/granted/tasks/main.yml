@@ -1,0 +1,14 @@
+- name: Debug user
+  ansible.builtin.debug:
+    msg: "User: {{ utils_os_users_service_directory_permissions_granted__user }}"
+- name: Ensure permissions on target directory for service user
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ utils_os_users_service_directory_permissions_granted__user }}"
+    group: "{{ utils_os_users_service_directory_permissions_granted__group }}"
+    mode: '0770'
+    recurse: true
+  loop: "{{ utils_os_users_service_directory_permissions_granted__directories }}"

@@ -1,0 +1,11 @@
+- name: "Ensure {{ games_cod1_server_service__name }} service is {{ games_cod1_server_service__action }}"
+  become: true
+  become_user: root
+  ansible.builtin.systemd:
+    name: "{{ games_cod1_server_service__name }}"
+    state: "{{ games_cod1_server_service__action }}"
+    enabled: yes  # Ensures it starts on boot as well
+
+- name: Fetch Service Status
+  ansible.builtin.include_role:
+    name: roles/games/cod1/server/status

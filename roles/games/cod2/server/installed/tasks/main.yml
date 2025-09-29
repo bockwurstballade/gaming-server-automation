@@ -1,0 +1,285 @@
+- name: Ensure COD2 Dedicated Server is installed
+  become: true
+  become_user: root
+  block:
+  - name: Check if cod2 systemd service exists
+    become: true
+    become_user: root
+    ansible.builtin.systemd:
+      name: cod2
+    register: service_check
+    ignore_errors: yes
+    check_mode: yes
+
+  - name: Stop cod2 service if it exists
+    become: true
+    become_user: root
+    ansible.builtin.systemd:
+      name: cod2
+      state: stopped
+    when: service_check.status.LoadState != 'not-found'
+
+  - name: Check if cod2_no_cd systemd service exists
+    become: true
+    become_user: root
+    ansible.builtin.systemd:
+      name: cod2_no_cd
+    register: service_check
+    ignore_errors: yes
+    check_mode: yes
+
+  - name: Stop cod2_no_cd service if it exists
+    become: true
+    become_user: root
+    ansible.builtin.systemd:
+      name: cod2_no_cd
+      state: stopped
+    when: service_check.status.LoadState != 'not-found'
+
+  - name: Ensure Call of Duty 2 Server is installed
+    become: true
+    become_user: root
+    block:
+    - name: Ensure unzip is installed
+      ansible.builtin.package:
+        name: unzip
+        state: present
+
+  - name: Ensure gcc libraries for CoD Server are downloaded
+    ansible.builtin.include_role:
+      name: roles/utils/gdrive/download
+    vars:
+      utils_gdrive_download__file_id: "{{ games_cod2_server_installed__gcc_file_id }}"
+      utils_gdrive_download__file_name: "{{ games_cod2_server_installed__gcc_file_name }}"
+      utils_gdrive_download__temp_mode: "{{ games_cod2_server_installed__temp_mode | default(true) }}"
+
+  - name: Debug
+    ansible.builtin.debug:
+      msg: "temp dir path: {{ utils_gdrive_download__temp_dir }}"
+
+  - name: "Ensure {{ games_cod2_server_installed__gcc_file_name }} is extracted to /lib/"
+    become: true
+    become_user: root
+    ansible.builtin.unarchive:
+      src: "{{ (utils_gdrive_download__temp_dir.path, games_cod2_server_installed__gcc_file_name) | ansible.builtin.path_join }}"
+      dest: "{{ [games_cod2_server_installed__lib_dir] | ansible.builtin.path_join }}"
+      mode: '0775'
+      remote_src: true
+
+  - name: Ensure Service User Group exists
+    become: true
+    become_user: root
+    ansible.builtin.group:
+      name: "{{ games_cod2_server_installed__group_name }}"
+      state: present
+
+  - name: Ensure "{{ games_cod2_server_installed__user_name }}" user exists
+    become: true
+    become_user: root
+    ansible.builtin.user:
+      name: "{{ games_cod2_server_installed__user_name }}"
+      state: present
+      group: "{{ games_cod2_server_installed__group_name }}"
+      password: "{{ games_cod2_server_installed__user_password }}"
+      shell: /bin/bash
+      home: "/home/{{ games_cod2_server_installed__user_name }}"
+      create_home: true
+
+  - name: Add i386 architecture
+    become: true
+    become_user: root
+    ansible.builtin.command: dpkg --add-architecture i386
+    register: dpkg_result
+    changed_when: dpkg_result.rc == 0  # Only mark as changed if successful
+    failed_when: dpkg_result.rc != 0   # Fail if the command returns an error
+
+  - name: Update apt cache
+    become: true
+    become_user: root
+    ansible.builtin.apt:
+      update_cache: yes
+    when: dpkg_result.changed # Only run if the architecture was added
+
+  - name: Install 32-bit libraries
+    become: true
+    become_user: root
+    ansible.builtin.apt:
+      name:
+        - libc6:i386
+        - libstdc++6:i386
+      state: present # Ensures the packages are installed
+    
+  - name: Ensure /games/ directory exists
+    become: true
+    become_user: root
+    ansible.builtin.file:
+      path:  /games/
+      state: directory
+      mode: '0755'
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: users
+
+  - name: Ensure cod2 Server directory exists
+    become: true
+    become_user: root
+    ansible.builtin.file:
+      path: "{{ games_cod2_server_installed__directory }}"
+      state: directory
+      mode: '0750'
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: "{{ games_cod2_server_installed__group_name }}"
+
+  - name: Ensure cod2 home directory exists
+    become: true
+    become_user: root
+    ansible.builtin.file:
+      path:  "{{ games_cod2_server_installed__home_directory }}"
+      state: directory
+      mode: '0750'
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: "{{ games_cod2_server_installed__group_name }}"
+
+    # - name: Ensure cod2 home main directory exists
+    #   ansible.builtin.file:
+    #     path:  "{{ [games_cod2_server_installed__home_directory, '.callofduty2'] | ansible.builtin.path_join }}"
+    #     state: directory
+    #     mode: '0750'
+    #     owner: "{{ games_cod2_server_installed__user_name }}"
+    #     group: "{{ games_cod2_server_installed__group_name }}"
+
+
+  - name: Ensure LD_LIBRARY_PATH is set in .bashrc for cod2
+    ansible.builtin.lineinfile:
+      path: /home/cod2/.bashrc
+      regexp: '^export LD_LIBRARY_PATH=.*$'
+      line: 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib:/games/cod2"'
+      state: present
+      owner: cod2
+      group: cod2
+
+  - name: "Ensure {{ games_cod2_server_installed__gcc_file_name }} is extracted to {{ games_cod2_server_installed__directory }}"
+    ansible.builtin.unarchive:
+      src: "{{ (utils_gdrive_download__temp_dir.path, games_cod2_server_installed__gcc_file_name) | ansible.builtin.path_join }}"
+      dest: "{{ [games_cod2_server_installed__directory] | ansible.builtin.path_join }}"
+      mode: '0775'
+      remote_src: true
+
+  - name: Ensure CoD CD Setup Data is downloaded
+    ansible.builtin.include_role:
+      name: roles/utils/gdrive/download
+    vars:
+      utils_gdrive_download__file_id: "{{ games_cod2_server_installed__setup_data_file_id }}"
+      utils_gdrive_download__file_name: "{{ games_cod2_server_installed__setup_data_file_name }}"
+      utils_gdrive_download__temp_mode: "{{ games_cod2_server_installed__temp_mode | default(true) }}"
+
+  - name: "Ensure CoD CD Setup Data is extracted to {{ games_cod2_server_installed__directory }}"
+    ansible.builtin.unarchive:
+      src: "{{ (utils_gdrive_download__temp_dir.path, games_cod2_server_installed__setup_data_file_name) | ansible.builtin.path_join }}"
+      dest: "{{ [games_cod2_server_installed__directory] | ansible.builtin.path_join }}"
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: "{{ games_cod2_server_installed__group_name }}"
+      mode: '0775'
+      remote_src: true
+
+  - name: "Ensure CoD 2 v{{ games_cod2_server_installed__server_version }} Linux Server Base is downloaded"
+    ansible.builtin.include_role:
+      name: roles/utils/gdrive/download
+    vars:
+      utils_gdrive_download__file_id: "{{ games_cod2_server_installed__one_three_server_base_file_id }}"
+      utils_gdrive_download__file_name: "{{ games_cod2_server_installed__one_three_server_base_file_name }}"
+      utils_gdrive_download__temp_mode: "{{ games_cod2_server_installed__temp_mode | default(true) }}"
+
+  - name: "Ensure CoD 2 v{{ games_cod2_server_installed__server_version }} Linux Server Base is extracted to {{ games_cod2_server_installed__directory }}"
+    ansible.builtin.unarchive:
+      src: "{{ (utils_gdrive_download__temp_dir.path, games_cod2_server_installed__one_three_server_base_file_name) | ansible.builtin.path_join }}"
+      dest: "{{ [games_cod2_server_installed__directory] | ansible.builtin.path_join }}"
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: "{{ games_cod2_server_installed__group_name }}"
+      mode: '0775'
+      remote_src: true
+
+  - name: Create autoexec_mp.cfg with map configuration
+    ansible.builtin.copy:
+      dest: "{{ games_cod2_server_installed__directory }}/main/autoexec_mp.cfg"
+      content: |
+        exec server.cfg
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: "{{ games_cod2_server_installed__group_name }}"
+      mode: '0644'
+
+  - name: Ensure server.cfg exists with correct content
+    ansible.builtin.template:
+      src: templates/server.cfg.j2
+      dest: "{{ games_cod2_server_installed__directory }}/main/{{ games_cod2_server_installed__server_cfg }}"
+      owner: "{{ games_cod2_server_installed__user_name }}"
+      group: "{{ games_cod2_server_installed__group_name }}"
+      mode: '0644'
+      backup: yes
+
+    # - name: Ensure config_mp.cfg file exists in /home/cod2/.callofduty
+    #   ansible.builtin.copy:
+    #     src: /games/cod2/main/config_mp.cfg
+    #     dest: /home/cod2/.callofduty/main/config_mp.cfg
+    #     owner: "{{ games_cod2_server_installed__user_name }}"
+    #     group: "{{ games_cod2_server_installed__group_name }}"
+    #     mode: '0644'
+    #     backup: yes
+
+  - name: "Create systemd service file for {{ games_cod2_server_installed__service_name }}"
+    when: games_cod2_server_installed__cd_check == true
+    ansible.builtin.copy:
+      dest: "/etc/systemd/system/{{ games_cod2_server_installed__service_name }}.service"
+      content: |
+        [Unit]
+        Description={{ games_cod2_server_installed__service_description }}
+        After=network.target
+
+        [Service]
+        User={{ games_cod2_server_installed__user_name }}
+        Group={{ games_cod2_server_installed__group_name }}
+        WorkingDirectory={{ games_cod2_server_installed__directory }}
+        Environment="LD_LIBRARY_PATH=/lib:{{ games_cod2_server_installed__directory }}"
+        ExecStart={{ games_cod2_server_installed__directory }}/cod2_lnxded +set dedicated 2 +set net_port {{ games_cod2_server_installed__port }} +set fs_basepath {{ games_cod2_server_installed__directory }} +exec {{ games_cod2_server_installed__server_cfg }} +set ttycon 0
+        Restart=on-failure
+        Type=simple
+        KillMode=process
+
+        [Install]
+        WantedBy=multi-user.target
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: "Create systemd service file for {{ games_cod2_server_installed__service_name }}"
+    when: games_cod2_server_installed__cd_check == false
+    ansible.builtin.copy:
+      dest: "/etc/systemd/system/{{ games_cod2_server_installed__service_name }}.service"
+      content: |
+        [Unit]
+        Description={{ games_cod2_server_installed__service_description }}
+        After=network.target
+
+        [Service]
+        User={{ games_cod2_server_installed__user_name }}
+        Group={{ games_cod2_server_installed__group_name }}
+        WorkingDirectory={{ games_cod2_server_installed__directory }}
+        Environment="LD_LIBRARY_PATH=/lib:{{ games_cod2_server_installed__directory }}" "LD_PRELOAD={{ games_cod2_server_installed__directory }}/libcod2_1_3_nomysql.so"
+        ExecStart={{ games_cod2_server_installed__directory }}/cod2_lnxded +set dedicated 2 +set net_port {{ games_cod2_server_installed__port }} +set sv_cracked 1 +set fs_basepath {{ games_cod2_server_installed__directory }} +exec {{ games_cod2_server_installed__server_cfg }} +set ttycon 0
+        Restart=on-failure
+        Type=simple
+        KillMode=process
+
+        [Install]
+        WantedBy=multi-user.target
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Reload systemd daemon
+    systemd:
+      daemon_reload: yes
+
+  - name: "Enable {{ games_cod2_server_installed__service_name }} service"
+    systemd:
+      name: "{{ games_cod2_server_installed__service_name }}"
+      enabled: yes

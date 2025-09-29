@@ -1,0 +1,49 @@
+- name: Install Warsow Server Instances
+  become: true
+  become_user: root
+  block:
+
+  - name: Ensure mappool Files exist with correct content
+    ansible.builtin.template:
+      src: "templates/games/quake_live/baseq3/{{ item.maps_template }}.j2"
+      dest: "{{ (games_quake_live_server_instances_installed__baseq3, item.maps_template ) | ansible.builtin.path_join }}"
+      owner: "{{ games_quake_live_server_instances_installed__user_name }}"
+      group: "{{ games_quake_live_server_instances_installed__group_name }}"
+      mode: '0644'
+      backup: yes
+    loop: "{{ games_quake_live_server_instances_installed__instances }}"
+
+  - name: Ensure cfg Files exist with correct content
+    ansible.builtin.template:
+      src: "templates/games/quake_live/baseq3/quake_live_server.cfg.j2"
+      dest: "{{ (games_quake_live_server_instances_installed__baseq3, item.cfg + '.cfg' ) | ansible.builtin.path_join }}"
+      owner: "{{ games_quake_live_server_instances_installed__user_name }}"
+      group: "{{ games_quake_live_server_instances_installed__group_name }}"
+      mode: '0644'
+      backup: yes
+    loop: "{{ games_quake_live_server_instances_installed__instances }}"
+
+  - name: "Create systemd service file"
+    ansible.builtin.copy:
+      dest: "/etc/systemd/system/quake_live_{{ item.cfg }}.service"
+      content: |
+        [Unit]
+        Description=Quake Live {{ item.name }} Server
+        After=network.target
+
+        [Service]
+        User={{ games_quake_live_server_instances_installed__user_name }}
+        Group={{ games_quake_live_server_instances_installed__group_name }}
+        WorkingDirectory={{ games_quake_live_server_instances_installed__directory }}
+        Environment="LD_LIBRARY_PATH=/lib:/lib64:{{ games_quake_live_server_instances_installed__directory }}linux64"
+        ExecStart={{ games_quake_live_server_instances_installed__directory }}qzeroded.x64 +set net_port {{ item.port }} +set fs_basepath {{ games_quake_live_server_instances_installed__directory }} +set fs_homepath {{ games_quake_live_server_instances_installed__service_user_home }}/.quakelive +exec {{ item.cfg }}.cfg +set ttycon 0
+        Restart=on-failure
+        Type=simple
+        KillMode=process
+
+        [Install]
+        WantedBy=multi-user.target
+      owner: root
+      group: root
+      mode: '0644'
+    loop: "{{ games_quake_live_server_instances_installed__instances }}"

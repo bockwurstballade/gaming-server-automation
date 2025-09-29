@@ -1,0 +1,10 @@
+- name: "Enforce {{ (utils_os_file_template_enforced__directory, utils_os_file_template_enforced__file_name) | ansible.builtin.path_join }} file"
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: "{{ ('templates', utils_os_file_template_enforced__directory | regex_replace('^/', ''), utils_os_file_template_enforced__file_name + '.j2') | ansible.builtin.path_join }}" #templates/games/cs1_6/valve/server.cfg.j2
+    dest: "{{ (utils_os_file_template_enforced__directory, utils_os_file_template_enforced__file_name) | ansible.builtin.path_join }}"
+    owner: "{{ utils_os_file_template_enforced__user }}"
+    group: "{{ utils_os_file_template_enforced__group }}"
+    mode: '0640'
+    backup: yes

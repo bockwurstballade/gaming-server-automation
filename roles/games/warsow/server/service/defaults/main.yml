@@ -1,0 +1,13 @@
+games_warsow_server_service__action: "{{ service_action | default('started') }}"
+games_warsow_server_service__name: "warsow{{ '_' + service_name if service_name else '' }}"
+games_warsow_server_service__all:
+  - warsow
+  - warsow_dm
+  - warsow_tdm
+  - warsow_ctf
+  - warsow_ca
+  - warsow_da
+  - warsow_race
+  - warsow_instagib_dm
+  - warsow_instagib_tdm
+  - warsow_instagib_ctf

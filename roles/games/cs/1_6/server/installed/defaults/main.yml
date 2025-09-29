@@ -1,0 +1,43 @@
+games_cs_1_6_server_installed__user: "{{ user | default('cs1_6') }}"
+games_cs_1_6_server_installed__group: "{{ group | default('steam') }}"
+games_cs_1_6_server_installed__password: "{{ service_user_pw | password_hash('sha512') }}"
+games_cs_1_6_server_installed__service_user_home: "{{ ('/', 'home', 'steam') | ansible.builtin.path_join }}"
+
+# Directories:
+games_cs_1_6_server_installed__directory: "{{ dafrk__cs_1_6_server.directories.server.path | default('/games/cs1_6/') }}"
+games_cs_1_6_server_installed__cstrike_dir: "{{ (games_cs_1_6_server_installed__directory, 'cstrike') | ansible.builtin.path_join }}"
+games_cs_1_6_server_installed__lib_subdir: "{{ (games_cs_1_6_server_installed__directory, 'linux64') | ansible.builtin.path_join }}"
+games_cs_1_6_server_installed__service_user_home: "{{ ('/', 'home', games_cs_1_6_server_installed__user) | ansible.builtin.path_join }}"
+games_cs_1_6_server_installed__sdk32: "{{ (games_cs_1_6_server_installed__service_user_home, '.steam', 'sdk32') | ansible.builtin.path_join }}"
+games_cs_1_6_server_installed__service_directories:
+ - "{{ games_cs_1_6_server_installed__directory }}"
+ - "{{ games_cs_1_6_server_installed__service_user_home }}"
+ - "{{ (games_cs_1_6_server_installed__service_user_home, '.steam') | ansible.builtin.path_join }}"
+ - "{{ games_cs_1_6_server_installed__sdk32 }}"
+
+
+#systemd
+games_cs_1_6_server_installed__service_name: cs16
+games_cs_1_6_server_installed__service_description: "Counter Strike 1.6 Server"
+games_cs_1_6_server_installed__execstart: "{{ games_cs_1_6_server_installed__directory + 'hlds_run -game cstrike +maxplayers 32 +map de_dust2' }}"
+
+# Libraries
+games_cs_1_6_server_installed__libraries:
+  - "libstdc++6:i386"
+  - "libgcc-s1:i386"
+games_cs_1_6_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_cs_1_6_server_installed__directory }}"
+ - "{{ games_cs_1_6_server_installed__lib_subdir | default('') }}"
+ - "{{ games_cs_1_6_server_installed__service_user_home }}"
+ - "{{ (games_cs_1_6_server_installed__service_user_home, '.steam', 'sdk32') | ansible.builtin.path_join }}"
+games_cs_1_6_server_installed__ld_library_path_string: "{{ games_cs_1_6_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
+
+# Links
+games_cs_1_6_server_installed__symlinks:
+  - orig: "/opt/steamcmd/linux32/steamclient.so"
+    link: "{{ (games_cs_1_6_server_installed__sdk32, 'steamclient.so') | ansible.builtin.path_join }}"

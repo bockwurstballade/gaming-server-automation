@@ -1,0 +1,38 @@
+- name: Perform actions as root
+  become: true
+  become_user: root
+  block:
+    - name: "Create systemd service file for {{ utils_os_systemd_service_configured__service_name }}"
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ utils_os_systemd_service_configured__service_name }}.service"
+        content: |
+          [Unit]
+          Description={{ utils_os_systemd_service_configured__service_description }}
+          After=network.target
+
+          [Service]
+          User={{ utils_os_systemd_service_configured__user }}
+          Group={{ utils_os_systemd_service_configured__group }}
+          WorkingDirectory={{ utils_os_systemd_service_configured__working_directory }}
+          Environment="LD_LIBRARY_PATH={{ utils_os_systemd_service_configured__ld_library_path_string }}"
+          ExecStart={{ utils_os_systemd_service_configured__execstart }}
+          Restart=on-failure
+          Type=simple
+          KillMode=process
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Perform systemctl daemon-Reload
+      ansible.builtin.command:
+        cmd: >-
+          systemctl
+          daemon-reload
+      register: daemonreload
+      failed_when: daemonreload.failed
+      changed_when: daemonreload.changed

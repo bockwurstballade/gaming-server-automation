@@ -1,0 +1,43 @@
+# User and Group
+games_cod1_server_installed__user_name: "{{ dafrk__cod_server.user.name | default('cod1') }}"
+games_cod1_server_installed__user_password: "{{ service_user_pw | password_hash('sha512') }}"
+games_cod1_server_installed__group_name: "{{ dafrk__cod_server.group.name | default('cod1') }}"
+
+# Download
+games_cod1_server_installed__temp_mode: true
+games_cod1_server_installed__download_dir: "{{ utils_gdrive_download__temp_dir.path | default('/tmp/') }}"
+
+# Installation Files
+## GCC Libraries
+games_cod1_server_installed__lib_dir: "{{  dafrk__os.directories.lib_dir.path | default('/tmp/') }}"
+games_cod1_server_installed__gcc_file_id: "{{ dafrk__cod_server.files.gcc.file_id }}"
+games_cod1_server_installed__gcc_file_name: "{{ dafrk__cod_server.files.gcc.file_name | default('gcc3-libs.tar.bz2') }}"
+
+## COD1 Linux Server Base
+games_cod1_server_installed__directory: "{{ dafrk__cod_server.directories.cod_server.path | default('/games/cod1/') }}"
+games_cod1_server_installed__home_directory: "{{ dafrk__cod_server.directories.cod_home.path | default('/games/cod1/') }}"
+games_cod1_server_installed__one_five_server_base_file_id: "{{ dafrk__cod_server.files.one_five_server_base.file_id }}"
+games_cod1_server_installed__one_five_server_base_file_name: "{{ dafrk__cod_server.files.one_five_server_base.file_name }}"
+games_cod1_server_installed__one_fiveb_server_base_file_id: "{{ dafrk__cod_server.files.one_fiveb_server_base.file_id }}"
+games_cod1_server_installed__one_fiveb_server_base_file_name: "{{ dafrk__cod_server.files.one_fiveb_server_base.file_name }}"
+
+##systemd daemon settings
+games_cod1_server_installed__service_name: "{{ 'cod1' if cd_check | default(true) else 'cod1_no_cd' }}"
+games_cod1_server_installed__service_description: "{{ 'Call of Duty 1 Dedicated Server' if cd_check | default(true) else 'Call of Duty 1 Dedicated Server - No CD' }}"
+
+
+## CD Content
+games_cod1_server_installed__setup_data_file_id: "{{ dafrk__cod_server.files.setup_data.file_id }}"
+games_cod1_server_installed__setup_data_file_name: "{{ dafrk__cod_server.files.setup_data.file_name }}"
+
+# Server Settings
+games_cod1_server_installed__cd_check: "{{ cd_check | default(true, true) }}"
+games_cod1_server_installed__public_ip: "{{ dafrk__os.network.public_ipv4.address | default('0.0.0.0', true) }}"
+games_cod1_server_installed__port: "{{ dafrk__cod_server.instance_no_1.port if cd_check | default(true) else dafrk__cod_server.instance_no_2.port }}"
+games_cod1_server_installed__server_cfg:  "{{ dafrk__cod_server.instance_no_1.server_cfg if cd_check | default(true) else dafrk__cod_server.instance_no_2.server_cfg }}"
+games_cod1_server_installed__sv_hostname: "{{ dafrk__cod_server.instance_no_1.servername }}"
+games_cod1_server_installed__admin: "{{ dafrk__cod_server.instance_no_1.admin }}"
+games_cod1_server_installed__motd: "{{ dafrk__cod_server.instance_no_1.motd }}"
+games_cod1_server_installed__rcon_password: "{{ rcon_password }}"
+games_cod1_server_installed__server_password: "{{ server_password }}"
+games_cod1_server_installed__server_max_players: "{{ server_password }}"

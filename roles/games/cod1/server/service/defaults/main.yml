@@ -1,0 +1,3 @@
+games_cod1_server_service__action: "{{ action | default('started') }}"
+games_cod1_server_service__cd_check:  "{{ cd_check | default(true, true) }}"
+games_cod1_server_service__name: "{{ 'cod1' if cd_check | default(true) else 'cod1_no_cd' }}"

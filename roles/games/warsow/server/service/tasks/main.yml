@@ -1,0 +1,18 @@
+- name: "Ensure {{ games_warsow_server_service__name }} service is {{ games_warsow_server_service__action }}"
+  when: "'all' not in service_name"
+  become: true
+  become_user: root
+  ansible.builtin.systemd:
+    name: "{{ games_warsow_server_service__name }}"
+    state: "{{ games_warsow_server_service__action }}"
+    enabled: yes  # Ensures it starts on boot as well
+
+- name: "Ensure Services are {{ games_warsow_server_service__action }}"
+  when: "'all' in service_name"
+  become: true
+  become_user: root
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: "{{ games_warsow_server_service__action }}"
+    enabled: yes  # Ensures it starts on boot as well
+  loop: "{{ games_warsow_server_service__all }}"

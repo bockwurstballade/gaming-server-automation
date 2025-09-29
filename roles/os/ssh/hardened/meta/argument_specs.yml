@@ -1,0 +1,19 @@
+argument_specs:
+  main:
+    short_description: "Harden SSH configuration on the target system"
+    options:
+      os_ssh_hardened__port:
+        description: "The port number on which the SSH service will listen."
+        type: "int"
+        default: "{{ dafrk__os.ssh.port | default(27001) }}"
+        required: false
+      os_ssh_hardened__ssh_service_name:
+        description: "The name of the SSH service, determined based on the OS family."
+        type: "str"
+        default: "{{ 'sshd' if ansible_os_family == 'RedHat' else 'ssh' }}"
+        required: false
+      os_ssh_hardened__use_systemd:
+        description: "Whether to use systemd to manage the SSH service, based on the system's service manager."
+        type: "bool"
+        default: "{{ ansible_service_mgr == 'systemd' }}"
+        required: false

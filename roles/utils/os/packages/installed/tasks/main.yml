@@ -1,0 +1,26 @@
+- name: Install packages
+  become: true
+  become_user: root
+  block:
+    - name: Check for existing foreign architectures
+      ansible.builtin.command: dpkg --print-foreign-architectures
+      register: foreign_architectures
+      changed_when: false
+      check_mode: false # Always run this check, even in check mode
+
+    - name: Add i386 architecture if required by packages
+      ansible.builtin.command: dpkg --add-architecture i386
+      when:
+        # Condition 1: An i386 package is in our list
+        - (utils_os_packages_installed__packages | select('search', ':i386$') | list | length) > 0
+        # Condition 2: The architecture isn't already enabled
+        - "'i386' not in foreign_architectures.stdout"
+      notify: Update APT cache # Good practice after adding an architecture
+
+    - name: Ensure required packages are installed
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        "{{ utils_os_packages_installed__packages }}"

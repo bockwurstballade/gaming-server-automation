@@ -1,0 +1,41 @@
+# User and Group
+games_cod2_server_installed__user_name: "{{ dafrk__cod2_server.user.name | default('cod2') }}"
+games_cod2_server_installed__user_password: "{{ service_user_pw | password_hash('sha512') }}"
+games_cod2_server_installed__group_name: "{{ dafrk__cod2_server.group.name | default('cod2') }}"
+
+# Download
+games_cod2_server_installed__temp_mode: true
+games_cod2_server_installed__download_dir: "{{ utils_gdrive_download__temp_dir.path | default('/tmp/') }}"
+
+# Installation Files
+## GCC Libraries
+games_cod2_server_installed__lib_dir: "{{  dafrk__os.directories.lib_dir.path | default('/tmp/') }}"
+games_cod2_server_installed__gcc_file_id: "{{ dafrk__cod2_server.files.gcc.file_id }}"
+games_cod2_server_installed__gcc_file_name: "{{ dafrk__cod2_server.files.gcc.file_name | default('gcc3-libs.tar.bz2') }}"
+
+## COD2 Linux Server Base
+games_cod2_server_installed__server_version: "{{ dafrk__cod2_server.directories.cod2_server.version | default('1.3') }}"
+games_cod2_server_installed__directory: "{{ dafrk__cod2_server.directories.cod2_server.path | default('/games/cod2/') }}"
+games_cod2_server_installed__home_directory: "{{ dafrk__cod2_server.directories.cod_home.path | default('/home/cod2/') }}"
+games_cod2_server_installed__one_three_server_base_file_id: "{{ dafrk__cod2_server.files.one_three_server_base.file_id }}"
+games_cod2_server_installed__one_three_server_base_file_name: "{{ dafrk__cod2_server.files.one_three_server_base.file_name }}"
+
+## CD Content
+games_cod2_server_installed__setup_data_file_id: "{{ dafrk__cod2_server.files.setup_data.file_id }}"
+games_cod2_server_installed__setup_data_file_name: "{{ dafrk__cod2_server.files.setup_data.file_name }}"
+
+## systemd Daemon Settings
+games_cod2_server_installed__service_name: "{{ 'cod2' if cd_check | default(true) else 'cod2_no_cd' }}"
+games_cod2_server_installed__service_description: "{{ 'Call of Duty 2 Dedicated Server' if cd_check | default(true) else 'Call of Duty 2 Dedicated Server - No CD' }}"
+
+# Server Settings
+games_cod2_server_installed__cd_check: "{{ cd_check | default(true) }}"
+games_cod2_server_installed__public_ip: "{{ dafrk__os.network.public_ipv4.address | default('0.0.0.0', true) }}"
+games_cod2_server_installed__port: "{{ dafrk__cod2_server.instance_no_1.port if cd_check | default(true) else dafrk__cod2_server.instance_no_2.port }}"
+games_cod2_server_installed__server_cfg:  "{{ dafrk__cod2_server.instance_no_1.server_cfg if cd_check | default(true) else dafrk__cod2_server.instance_no_2.server_cfg }}"
+games_cod2_server_installed__motd:  "{{ dafrk__cod2_server.instance_no_1.motd if cd_check | default(true) else dafrk__cod2_server.instance_no_2.motd }}"
+games_cod2_server_installed__sv_hostname: "{{ dafrk__cod2_server.instance_no_1.servername }}"
+games_cod2_server_installed__admin: "{{ dafrk__cod2_server.instance_no_1.admin }}"
+games_cod2_server_installed__rcon_password: "{{ rcon_password }}"
+games_cod2_server_installed__server_password: "{{ server_password }}"
+games_cod2_server_installed__server_max_players: "{{ dafrk__cod2_server.instance_no_1.max_players }}"

@@ -1,0 +1,21 @@
+games_half_life_1_server_installed__user: "{{ user | default('cs1_6') }}" # must be same user as for CS 1.6 Server
+games_half_life_1_server_installed__group: "{{ group | default('steam') }}"
+games_half_life_1_server_installed__service_user_home: "{{ ('/', 'home', games_half_life_1_server_installed__user) | ansible.builtin.path_join }}"
+games_half_life_1_server_installed__directory: "{{ dafrk__cs_1_6_server.directories.server.path | default('/games/cs1_6/') }}"
+games_half_life_1_server_installed__valve_dir: "{{ (games_half_life_1_server_installed__directory, 'valve') | ansible.builtin.path_join }}"
+games-half_life_1_server_installed__lib_subdir: "{{ (games_half_life_1_server_installed__directory, 'linux64') | ansible.builtin.path_join }}"
+games_half_life_1_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_half_life_1_server_installed__directory }}"
+ - "{{ games_half_life_1_server_installed__lib_subdir | default('') }}"
+ - "{{ games_half_life_1_server_installed__service_user_home }}"
+ - "{{ (games_half_life_1_server_installed__service_user_home, '.steam', 'sdk32') | ansible.builtin.path_join }}"
+games_half_life_1_server_installed__ld_library_path_string: "{{ games_half_life_1_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
+#systemd
+games_half_life_1_server_installed__service_name: hl1
+games_half_life_1_server_installed__service_description: "Half Life 1 Server"
+games_half_life_1_server_installed__execstart: "{{ games_half_life_1_server_installed__directory + '/hlds_run -game valve +maxplayers 32 +map bounce -port 27020' }}"

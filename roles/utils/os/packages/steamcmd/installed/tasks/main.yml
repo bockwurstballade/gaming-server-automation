@@ -1,0 +1,103 @@
+- name: Install steamcmd
+  become: true
+  become_user: root
+  block:
+    # Install steamcmd https://developer.valvesoftware.com/wiki/SteamCMD#Linux
+    - name: "Ensure Service User Group {{ utils_os_packages_steamcmd_installed__group }} exists"
+      become: true
+      become_user: root
+      ansible.builtin.group:
+        name: "{{ utils_os_packages_steamcmd_installed__group }}"
+        state: present
+
+    - name: "Ensure user {{ utils_os_packages_steamcmd_installed__user }} is created"
+      ansible.builtin.user:
+        name: "{{ utils_os_packages_steamcmd_installed__user }}"
+        state: present
+        group: "{{ utils_os_packages_steamcmd_installed__group }}"
+        password: "{{ utils_os_packages_steamcmd_installed__password }}"
+        shell: /bin/bash
+        home: "{{ utils_os_packages_steamcmd_installed__home }}"
+        create_home: true
+
+    - name: Ensure contrib and non-free components are enabled
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list
+        # This regex finds the main debian repo line for your release (e.g., bookworm, bullseye)
+        regexp: '^(deb\s+.*?\s+{{ ansible_distribution_release }}\s+main)$'
+        # It then appends 'contrib' and 'non-free' to that line
+        line: '\1 contrib non-free'
+        backrefs: yes
+        state: present
+
+    - name: Ensure software-properties-common is installed
+      ansible.builtin.apt:
+        name: software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add non-free packages
+      ansible.builtin.command:
+        cmd: >-
+          apt-add-repository
+          non-free
+          -y
+      register: repoadd
+      changed_when: repoadd.changed
+      failed_when: repoadd.failed
+
+    - name: Check for existing foreign architectures
+      ansible.builtin.command:
+        cmd: dpkg --print-foreign-architectures
+      register: foreign_archs
+      changed_when: false
+      check_mode: false
+
+    - name: Add i386 architecture for 32-bit compatibility
+      ansible.builtin.command:
+        cmd: dpkg --add-architecture i386
+      when: "'i386' not in foreign_archs.stdout"
+      changed_when: true
+
+    - name: Update apt
+      ansible.builtin.command:
+        cmd: >-
+          apt
+          update
+
+    - name: Update apt package cache
+      ansible.builtin.apt:
+        update_cache: yes
+        # This prevents updating the cache on every run if it's less than an hour old.
+        cache_valid_time: 3600
+
+    - name: Ensure required packages are installed
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        "{{ utils_os_packages_steamcmd_installed__packages }}"
+
+    - name: Ensure target directory for steamcmd exists
+      ansible.builtin.file:
+        path: "{{ utils_os_packages_steamcmd_installed__steamcmd }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ utils_os_packages_steamcmd_installed__user }}"
+        group: "{{ utils_os_packages_steamcmd_installed__group }}"
+
+    - name: Download and unarchive SteamCMD
+      ansible.builtin.unarchive:
+        src: https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+        dest: "{{ utils_os_packages_steamcmd_installed__steamcmd }}"
+        remote_src: yes
+
+    - name: Ensure file permissions for steamcmd
+      ansible.builtin.file:
+        path: "{{ utils_os_packages_steamcmd_installed__steamcmd }}"
+        state: directory
+        mode: '0750'
+        recurse: true
+        owner: "{{ utils_os_packages_steamcmd_installed__user }}"
+        group: "{{ utils_os_packages_steamcmd_installed__group }}"

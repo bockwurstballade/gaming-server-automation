@@ -1,0 +1,18 @@
+- name: Create User
+  become: true
+  become_user: root
+  block:
+    - name: "Ensure Service User Group {{ utils_os_users_service_created__group }} exists"
+      ansible.builtin.group:
+        name: "{{ utils_os_users_service_created__group }}"
+        state: present
+
+    - name: Ensure "{{ games_cs_1_6_server_installed__user }}" user exists
+      ansible.builtin.user:
+        name: "{{ games_cs_1_6_server_installed__user }}"
+        state: present
+        group: "{{ utils_os_users_service_created__group }}"
+        password: "{{ utils_os_users_service_created__password }}"
+        shell: /bin/bash
+        home: "{{ utils_os_users_service_created__service_user_home }}"
+        create_home: true

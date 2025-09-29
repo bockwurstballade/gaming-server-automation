@@ -1,0 +1,19 @@
+argument_specs:
+  main:
+    short_description: Change SSH Server Port
+    options:
+      os_ssh_port_changed__port:
+        description: The port number to configure SSH to listen on
+        type: int
+        required: false
+        default: "{{ dafrk__os.ssh.port | default(27001) }}"
+      os_ssh_port_changed__port:
+        description: The port number to configure SSH to listen on
+        type: str
+        required: false
+        default: "{{ dafrk__os.ssh.port | default(27001) }}"
+      os_ssh_port_changed__port:
+        description: The port number to configure SSH to listen on
+        type: bool
+        required: false
+        default: true

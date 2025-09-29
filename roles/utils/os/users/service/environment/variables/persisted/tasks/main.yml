@@ -1,0 +1,21 @@
+- name: Ensure LD_LIBRARY_PATH is set in .bashrc
+  become: true
+  become_user: root
+  ansible.builtin.lineinfile:
+    path: "{{ (utils_os_users_service_environment_variables_persisted__home, '.bashrc') | ansible.builtin.path_join }}"
+    regexp: '^export LD_LIBRARY_PATH=.*$'
+    line: 'export LD_LIBRARY_PATH="{{ utils_os_users_service_environment_variables_persisted__ld_library_path_string }}"'
+    state: present
+    owner: "{{ utils_os_users_service_environment_variables_persisted__user }}"
+    group: "{{ utils_os_users_service_environment_variables_persisted__group }}"
+
+- name: Ensure PATH is set in .bashrc
+  become: true
+  become_user: root
+  ansible.builtin.lineinfile:
+    path: "{{ (utils_os_users_service_environment_variables_persisted__home, '.bashrc') | ansible.builtin.path_join }}"
+    regexp: '^export PATH=.*$'
+    line: 'export PATH="{{ utils_os_users_service_environment_variables_persisted__path_string }}"'
+    state: present
+    owner: "{{ utils_os_users_service_environment_variables_persisted__user }}"
+    group: "{{ utils_os_users_service_environment_variables_persisted__group }}"

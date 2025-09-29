@@ -1,0 +1,65 @@
+argument_specs:
+  main:
+    short_description: Install and configure Call of Duty 1 Server
+    description: This role installs the Call of Duty 1 server, its dependencies, and configures it as a systemd service.
+    options:
+      games_cod1_server_installed__user_name:
+        type: str
+        required: true
+        description: The username for the service user running the CoD1 server
+      games_cod1_server_installed__group_name:
+        type: str
+        required: true
+        description: The group name for the service user running the CoD1 server
+      games_cod1_server_installed__directory:
+        type: str
+        required: true
+        description: The installation directory for the CoD1 server
+      games_cod1_server_installed__gcc_file_id:
+        type: str
+        required: true
+        description: Google Drive file ID for GCC libraries archive
+      games_cod1_server_installed__gcc_file_name:
+        type: str
+        required: true
+        description: Filename for the GCC libraries archive
+      games_cod1_server_installed__setup_data_file_id:
+        type: str
+        required: true
+        description: Google Drive file ID for CoD CD setup data archive
+      games_cod1_server_installed__setup_data_file_name:
+        type: str
+        required: true
+        description: Filename for the CoD CD setup data archive
+      games_cod1_server_installed__one_five_server_base_file_id:
+        type: str
+        required: true
+        description: Google Drive file ID for CoD 1.5 Linux server base archive
+      games_cod1_server_installed__one_five_server_base_file_name:
+        type: str
+        required: true
+        description: Filename for the CoD 1.5 Linux server base archive
+      games_cod1_server_installed__one_fiveb_server_base_file_id:
+        type: str
+        required: true
+        description: Google Drive file ID for CoD 1.5b Linux server base archive
+      games_cod1_server_installed__one_fiveb_server_base_file_name:
+        type: str
+        required: true
+        description: Filename for the CoD 1.5b Linux server base archive
+      games_cod1_server_installed__user_password:
+        type: str
+        required: true
+        description: Password for the service user (should be encrypted with ansible-vault)
+      games_cod1_server_installed__lib_dir:
+        type: str
+        required: true
+        description: Directory where GCC libraries should be extracted (typically /lib)
+      games_cod1_server_installed__port:
+        type: int
+        required: true
+        description: Port number for the CoD1 server to listen on
+      games_cod1_server_installed__temp_mode:
+        type: bool
+        default: true
+        description: Whether to use temporary mode for Google Drive downloads

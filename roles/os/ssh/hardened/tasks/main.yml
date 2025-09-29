@@ -1,0 +1,57 @@
+- name: Harden SSH configuration
+  become: true
+  become_user: root
+  block:
+  - name: Configure SSH - Ensure root login and password authentication are disabled
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: present
+    loop:
+      - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
+      - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
+      - { regexp: '^PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+      - { regexp: '^ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no' }
+    notify: Restart SSH
+
+  - name: Harden SSH - Ensure secure ciphers, MACs, and KexAlgorithms
+    ansible.builtin.blockinfile:
+      path: /etc/ssh/sshd_config
+      block: |
+        Ciphers aes256-ctr,aes192-ctr,aes128-ctr
+        MACs hmac-sha2-512,hmac-sha2-256
+        KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+      marker: "# {mark} ANSIBLE MANAGED BLOCK - SSH HARDENING"
+      insertafter: EOF
+
+  - name: Additional SSH hardening - Ensure Set max auth tries and login grace time
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: present
+    loop:
+      - { regexp: '^MaxAuthTries', line: 'MaxAuthTries 3' }
+      - { regexp: '^LoginGraceTime', line: 'LoginGraceTime 30' }
+
+  - name: Ensure SSH service is enabled and started (systemd)
+    systemd:
+      name: "{{ os_ssh_hardened__ssh_service_name }}"
+      state: restarted
+      enabled: yes
+    when: os_ssh_hardened__use_systemd
+
+  - name: Ensure SSH service is enabled and started (service)
+    service:
+      name: "{{ os_ssh_hardened__ssh_service_name }}"
+      state: restarted
+      enabled: yes
+    when: not os_ssh_hardened__use_systemd
+
+  # Debug SSH Configuration hardened
+  - name: "Notify user that the SSHd configuration was hardened"
+    ansible.builtin.debug:
+      msg: |
+        Please be aware that the SSH configuration was hardened.
+        Test before closing any pre-existing SSH Connections.

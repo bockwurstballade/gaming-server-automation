@@ -1,0 +1,2 @@
+games_cod2_server_serial_check_disabled__cd_check: "{{ cd_check | bool | default(true) }}"
+games_cod2_server_serial_check_disabled__port: "{{ dafrk__cod2_server.instance_no_1.port if cd_check | default(true) else dafrk__cod2_server.instance_no_2.port }}"

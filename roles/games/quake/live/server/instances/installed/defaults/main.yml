@@ -1,0 +1,16 @@
+
+# User and Group
+games_quake_live_server_instances_installed__user_name: "{{ dafrk__quake_live_server.user.name | default('ql') }}"
+games_quake_live_server_instances_installed__group_name: "{{ dafrk__quake_live_server.group.name | default('steam') }}"
+
+# Directories
+games_quake_live_server_instances_installed__service_user_home: "{{ ('/', 'home', games_quake_live_server_instances_installed__user_name) | ansible.builtin.path_join }}"
+games_quake_live_server_instances_installed__directory: "{{ dafrk__quake_live_server.directories.server.path | default('/games/quake_live/') }}"
+games_quake_live_server_instances_installed__baseq3: "{{ dafrk__quake_live_server.directories.baseq3.path | default('/games/quake_live/baseq3') }}"
+# Instances
+games_quake_live_server_instances_installed__instances: "{{ dafrk_quake_live_server_instances }}"
+
+# Global Server Settings
+games_quake_live_server_instances_installed__public_ip: "{{ dafrk__os.network.public_ipv4.address | default('0.0.0.0', true) }}"
+games_quake_live_server_instances_installed__rcon_password: "{{ rcon_password }}"
+games_quake_live_server_instances_installed__server_password: "{{ server_password }}"

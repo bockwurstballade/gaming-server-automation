@@ -1,0 +1,91 @@
+- name: Ensure Potentially pre-existing service is stopped
+  ansible.builtin.include_role:
+    name: roles/utils/os/systemd/service/stopped
+  vars:
+    utils_os_systemd_service_stopped__service_name: "{{ games_arma_3_server_installed__service_name }}"
+
+- name: Ensure required software is installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/installed
+  vars:
+    utils_os_software_installed__name: "{{ item }}"
+  loop: "{{ games_arma_3_server_installed__software }}"
+
+- name: Install steamcmd
+  ansible.builtin.include_role:
+    name: roles/utils/os/packages/steamcmd/installed
+
+- name: Ensure Existence of Service User
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/created
+  vars:
+    - utils_os_users_service_created__group: "{{ games_arma_3_server_installed__group }}"
+    - utils_os_users_service_created__user: "{{ games_arma_3_server_installed__user }}"
+
+- name: Ensure permissions on target directories
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/directory/permissions/granted
+  vars:
+    utils_os_users_service_directory_permissions_granted__user: "{{ games_arma_3_server_installed__user }}"
+    utils_os_users_service_directory_permissions_granted__group: "{{ games_arma_3_server_installed__group }}"
+    utils_os_users_service_directory_permissions_granted__directories: "{{ games_arma_3_server_installed__service_directories }}"
+
+- name: Install Arma3 Dedicated Server
+  ansible.builtin.include_role:
+    name: roles/utils/os/packages/steamcmd/app/installed
+  vars:
+    utils_os_packages_steamcmd_app_installed__dest: "{{ games_arma_3_server_installed__directory }}"
+    utils_os_packages_steamcmd_app_installed__steam_user: "{{ games_arma_3_server_installed__steam_user }}"
+    utils_os_packages_steamcmd_app_installed__steam_password: "{{ games_arma_3_server_installed__steam_password }}"
+    utils_os_packages_steamcmd_app_installed__steam_guard_code: "{{ games_arma_3_server_installed__steam_guard_code }}"
+  tags:
+    - steam_guard
+
+- name: Ensure Environment Variables are properly set
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/environment/variables/persisted
+  vars:
+    - utils_os_users_service_environment_variables_persisted__user: "{{ games_arma_3_server_installed__user }}"
+    - utils_os_users_service_environment_variables_persisted__group: "{{ games_arma_3_server_installed__group }}"
+    - utils_os_users_service_environment_variables_persisted__service_dir: "{{ games_arma_3_server_installed__directory }}"
+    - utils_os_users_service_environment_variables_persisted__service_lib_subdir: "{{ games_arma_3_server_installed__lib_subdir }}"
+
+- name: Ensure Symbolic Links
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/links/symbolic/enforced
+  vars:
+    utils_os_file_links_symbolic_enforced__user: "{{ games_arma_3_server_installed__user }}"
+    utils_os_file_links_symbolic_enforced__group: "{{ games_arma_3_server_installed__group }}"
+    utils_os_file_links_symbolic_enforced__links: "{{ games_arma_3_server_installed__symlinks }}"
+
+- name: Enforce server.cfg template
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/template/enforced
+  vars:
+    utils_os_file_template_enforced__directory: "{{ games_arma_3_server_installed__directory }}"
+    utils_os_file_template_enforced__file_name: "server.cfg"
+    utils_os_file_template_enforced__user: "{{ games_arma_3_server_installed__user }}"
+    utils_os_file_template_enforced__group: "{{ games_arma_3_server_installed__group }}"
+
+- name: Extract vendor-supplied missions
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/archive/download_and_extract
+  vars:
+    utils_os_file_archive_download_and_extract__user: "{{ games_arma_3_server_installed__user }}"
+    utils_os_file_archive_download_and_extract__group: "{{ games_arma_3_server_installed__group }}"
+    utils_os_file_archive_download_and_extract__src: "{{ item.src }}"
+    utils_os_file_archive_download_and_extract__file_name: "{{ item.file_name }}"
+    utils_os_file_archive_download_and_extract__dest: "{{ item.dest }}"
+  loop: "{{ games_arma_3_server_installed__archives }}"
+
+- name: Enforce systemd Service file
+  ansible.builtin.include_role:
+    name: roles/utils/os/systemd/service/configured
+  vars:
+    utils_os_systemd_service_configured__user: "{{ games_arma_3_server_installed__user }}"
+    utils_os_systemd_service_configured__group: "{{ games_arma_3_server_installed__group }}"
+    utils_os_systemd_service_configured__service_name: "{{ games_arma_3_server_installed__service_name }}"
+    utils_os_systemd_service_configured__service_description: "{{ games_arma_3_server_installed__service_description }}"
+    utils_os_systemd_service_configured__working_directory: "{{ games_arma_3_server_installed__directory }}"
+    utils_os_systemd_service_configured__ld_library_path_string: "{{ games_arma_3_server_installed__ld_library_path_string }}"
+    utils_os_systemd_service_configured__execstart: "{{ games_arma_3_server_installed__execstart }}"

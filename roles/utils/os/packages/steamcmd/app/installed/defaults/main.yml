@@ -7,6 +7,8 @@ utils_os_packages_steamcmd_app_installed__app_mapping:
   cs_server: 90
   ql_server: 349090
   hl2_server: 232370
+  arma3_server: 233780
 utils_os_packages_steamcmd_app_installed__app_name: "{{ app_name }}"
 utils_os_packages_steamcmd_app_installed__app_id: "{{ app_id | default(utils_os_packages_steamcmd_app_installed__app_mapping[utils_os_packages_steamcmd_app_installed__app_name]) }}"
 utils_os_packages_steamcmd_app_installed__steamcmd: "{{ ('/', 'opt', 'steamcmd') | ansible.builtin.path_join }}"
+utils_os_packages_steamcmd_app_installed__steam_user: ""

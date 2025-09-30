@@ -13,9 +13,48 @@ games_cod1_server_installed__lib_dir: "{{  dafrk__os.directories.lib_dir.path | 
 games_cod1_server_installed__gcc_file_id: "{{ dafrk__cod_server.files.gcc.file_id }}"
 games_cod1_server_installed__gcc_file_name: "{{ dafrk__cod_server.files.gcc.file_name | default('gcc3-libs.tar.bz2') }}"
 
+## Archives
+games_cod1_server_installed__archives:
+  - description: "Legacy gcc libraries"
+    src: "{{ games_cod1_server_installed__gcc_file_id }}"
+    file_name: "{{ games_cod1_server_installed__gcc_file_name }}"
+    dest: "/lib/"
+  - description: "Legacy gcc libraries"
+    src: "{{ games_cod1_server_installed__gcc_file_id }}"
+    file_name: "{{ games_cod1_server_installed__gcc_file_name }}"
+    dest: "{{ games_cod1_server_installed__directory }}"
+  - description: "CoD1 CD Setup Data"
+    src: "{{ games_cod1_server_installed__setup_data_file_id }}"
+    file_name: "{{ games_cod1_server_installed__setup_data_file_name }}"
+    dest: "{{ games_cod1_server_installed__directory }}"
+  - description: "CoD 1.5 Linux Server Base"
+    src: "{{ games_cod1_server_installed__one_five_server_base_file_id }}"
+    file_name: "{{ games_cod1_server_installed__one_five_server_base_file_name }}"
+    dest: "{{ games_cod1_server_installed__directory }}"
+  - description: "CoD 1.5b Linux Server Base"
+    src: "{{ games_cod1_server_installed__one_fiveb_server_base_file_id }}"
+    file_name: "{{ games_cod1_server_installed__one_fiveb_server_base_file_name }}"
+    dest: "{{ games_cod1_server_installed__directory }}"
+
+## Templates
+games_cod1_server_installed__templates:
+  - description: "automatically loaded default config"
+    directory: "{{ games_cod1_server_installed__directory }}/main/"
+    file_name: "autoexec.cfg"
+  - description: "Main server config"
+    directory: "{{ games_cod1_server_installed__directory }}/main/"
+    file_name: "server.cfg"
+  - description: "Overall game config"
+    directory: "{{ games_cod1_server_installed__directory }}/main/"
+    file_name: "config_mp.cfg"
+  - description: "Overall game config for home"
+    directory: "/home/cod1/.callofduty/main/"
+    file_name: "config_mp.cfg"
+
 ## COD1 Linux Server Base
 games_cod1_server_installed__directory: "{{ dafrk__cod_server.directories.cod_server.path | default('/games/cod1/') }}"
-games_cod1_server_installed__home_directory: "{{ dafrk__cod_server.directories.cod_home.path | default('/games/cod1/') }}"
+games_cod1_server_installed__home_directory: "{{ dafrk__cod_server.directories.cod_home.path | default('/home/cod1/') }}"
+games_cod1_server_installed__server_main: "{{ (games_cod1_server_installed__directory, 'main') | ansible.builtin.path_join }}"
 games_cod1_server_installed__one_five_server_base_file_id: "{{ dafrk__cod_server.files.one_five_server_base.file_id }}"
 games_cod1_server_installed__one_five_server_base_file_name: "{{ dafrk__cod_server.files.one_five_server_base.file_name }}"
 games_cod1_server_installed__one_fiveb_server_base_file_id: "{{ dafrk__cod_server.files.one_fiveb_server_base.file_id }}"
@@ -33,11 +72,44 @@ games_cod1_server_installed__setup_data_file_name: "{{ dafrk__cod_server.files.s
 # Server Settings
 games_cod1_server_installed__cd_check: "{{ cd_check | default(true, true) }}"
 games_cod1_server_installed__public_ip: "{{ dafrk__os.network.public_ipv4.address | default('0.0.0.0', true) }}"
-games_cod1_server_installed__port: "{{ dafrk__cod_server.instance_no_1.port if cd_check | default(true) else dafrk__cod_server.instance_no_2.port }}"
-games_cod1_server_installed__server_cfg:  "{{ dafrk__cod_server.instance_no_1.server_cfg if cd_check | default(true) else dafrk__cod_server.instance_no_2.server_cfg }}"
-games_cod1_server_installed__sv_hostname: "{{ dafrk__cod_server.instance_no_1.servername }}"
-games_cod1_server_installed__admin: "{{ dafrk__cod_server.instance_no_1.admin }}"
-games_cod1_server_installed__motd: "{{ dafrk__cod_server.instance_no_1.motd }}"
+games_cod1_server_installed__port: 28950
+games_cod1_server_installed__sv_hostname: "{{ dafrk__cod_server.hostname }}"
+games_cod1_server_installed__admin: "{{ dafrk__cod_server.admin }}"
+games_cod1_server_installed__motd: "{{ dafrk__cod_server.motd }}"
 games_cod1_server_installed__rcon_password: "{{ rcon_password }}"
 games_cod1_server_installed__server_password: "{{ server_password }}"
 games_cod1_server_installed__server_max_players: "{{ server_password }}"
+
+# Environment Variables
+games_cod1_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_cod1_server_installed__directory }}"
+ - "{{ games_cod1_server_installed__server_main | default('') }}"
+ - "{{ games_cod1_server_installed__home_directory }}"
+games_cod1_server_installed__ld_library_path_string: "{{ games_cod1_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
+# Server Instances
+games_cod1_server_installed__instances: "{{ dafrk_cod1_server_instances }}"
+
+# Libraries
+games_cod1_server_installed__libraries:
+  - "libc6:i386"
+  - "libstdc++6:i386"
+
+# Software
+games_cod1_server_installed__software:
+ - unzip
+
+## systemd
+games_cod1_server_installed__service_name: cod1
+games_cod1_server_installed__execstart: "{{ (games_cod1_server_installed__directory, 'cod_lnxded') | ansible.builtin.path_join }} +set fs_basepath {{ games_cod1_server_installed__directory }} +map mp_harbor +set ttycon 0"
+
+## Directories
+
+games_cod1_server_installed__service_directories:
+ - "{{ games_cod1_server_installed__directory }}"
+ - "{{ games_cod1_server_installed__home_directory }}"
+ - "{{ [games_cod1_server_installed__home_directory, 'main'] | ansible.builtin.path_join }}"

@@ -1,0 +1,6 @@
+- name: "Ensure Service {{ utils_os_systemd_service_stopped__service_name }} is stopped"
+  ansible.builtin.include_role:
+    name: roles/utils/os/systemd/service/state
+  vars:
+    utils_os_systemd_service_state__service_name: "{{ utils_os_systemd_service_stopped__service_name }}"
+    utils_os_systemd_service_state__action: stopped

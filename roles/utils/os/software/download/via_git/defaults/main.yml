@@ -1,0 +1,3 @@
+utils_os_software_download_via_git__user: "{{ default('root') }}"
+utils_os_software_download_via_git__group: "{{ default('users') }}"
+utils_os_software_download_via_git__mode: "{{ default('0755') }}"

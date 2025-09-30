@@ -21,21 +21,53 @@
   changed_when: steamcmd_dir.changed
 
 - name: "Install App {{ utils_os_packages_steamcmd_app_installed__app_name }} using steamcmd"
+  when: 'not utils_os_packages_steamcmd_app_installed__steam_user'
   become: true
   become_user: "{{ utils_os_packages_steamcmd_app_installed__user }}"
   # Missing File Permissions Error: must be done with user steam, not as root
   ansible.builtin.command:
-    cmd: >-
-      /opt/steamcmd/steamcmd.sh
-      +force_install_dir
-      {{ utils_os_packages_steamcmd_app_installed__dest }}
-      +login
-      anonymous
-      +app_update
-      {{ utils_os_packages_steamcmd_app_installed__app_id }}
-      validate
-      +quit
+    argv:
+      - /opt/steamcmd/steamcmd.sh
+      - +force_install_dir
+      - "{{ utils_os_packages_steamcmd_app_installed__dest }}"
+      - +login
+      - anonymous
+      - +app_update
+      - "{{ utils_os_packages_steamcmd_app_installed__app_id }}"
+      - validate
+      - +quit
     chdir: "{{ utils_os_packages_steamcmd_app_installed__steamcmd }}"
   register: steamcmd_install
   failed_when: steamcmd_install.failed
   changed_when: steamcmd_install.changed
+
+- name: "Install App {{ utils_os_packages_steamcmd_app_installed__app_name }} using steamcmd"
+  when: 'utils_os_packages_steamcmd_app_installed__steam_user'
+  become: true
+  become_user: "{{ utils_os_packages_steamcmd_app_installed__user }}"
+  # Missing File Permissions Error: must be done with user steam, not as root
+  # How to get Steam Guard Code:
+  # Setup Steam Guard on your Mobile Phone
+  # Open The Steam App on your phone
+  # Tap on the Shield Icon
+  # Tap on "Show Steam Guard Code"
+  # You need to pass the Steam Guard Code as an Ansible Extra Var on the playbook level 
+  ansible.builtin.command:
+    argv:
+      - /opt/steamcmd/steamcmd.sh
+      - +force_install_dir
+      - "{{ utils_os_packages_steamcmd_app_installed__dest }}"
+      - +login
+      - "{{ utils_os_packages_steamcmd_app_installed__steam_user }}"
+      - "{{ utils_os_packages_steamcmd_app_installed__steam_password }}"
+      - "{{ utils_os_packages_steamcmd_app_installed__steam_guard_code }}"
+      - +app_update
+      - "{{ utils_os_packages_steamcmd_app_installed__app_id }}"
+      - validate
+      - +quit
+    chdir: "{{ utils_os_packages_steamcmd_app_installed__steamcmd }}"
+  register: steamcmd_install
+  failed_when: steamcmd_install.failed
+  changed_when: steamcmd_install.changed
+  tags:
+    - steam_guard

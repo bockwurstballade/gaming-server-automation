@@ -1,0 +1,243 @@
+//Initialisieren Read Only Vars:
+
+//Punkbuster
+set sv_punkbuster "0"
+pb_sv_disable
+wait 5
+set pb_sv_guidrelax 7
+
+
+//IP des Servers
+set net_ip "{{ item.ip }}"
+
+//Port des Servers
+set net_port "{{ item.port }}"
+
+//Spiel loggen ( 0 = aus 1 = an )
+set logfile "1"
+
+//0 - gepuffertes Loggen (zeitversetzt)
+//1 - sofortiges Loggen
+set g_logsync "1"
+
+//Name der Log-Datei
+set g_log "games_mp.log"
+
+//Oeffentliche Server-Informationen:
+
+//Name des Servers
+set sv_hostname "{{ item.hostname }}"
+
+//Administrator des Servers
+sets .Admin "{{ item.admin }}"
+
+//E-Mail-Adresse des Admins
+sets .Email ""
+
+//IRC-Channels
+sets .IRC "#n/a"
+
+//Homepage
+sets .Url ""
+
+//Standort des Servers
+sets .Location "Germany"
+
+//Begruessung
+set scr_motd "{{ item.motd }}"
+
+//***
+
+//Passwoerter
+
+//RCON-Passwort
+set rconPassword "{{ item.rcon_password }}"
+
+//NUR EINS VON BEIDEN VERWENDEN!
+//Server-Passwort
+set g_password "{{ item.password }}"
+
+//Privates Passwort
+set sv_privatepassword ""
+
+//***
+
+//Allgemeine Servereinstellungen:
+
+//Maximale Spieleranzahl
+set sv_maxclients "{{ item.max_players }}"
+
+//Private Clients
+set sv_privateClients ""
+
+//Maximale Datenrate
+set sv_maxRate "25000"
+
+//Mindest-Ping der Clients (0 = egal)
+set sv_minPing ""
+
+//Max-Ping der Clients (0 = egal)
+set sv_maxPing "120"
+
+//Antilag-Feature
+set g_antilag "1"
+
+//Friendly Fire (0 = an, 1 = aus,2 = reflektierend, 3 = geteilter Schaden)
+set scr_friendlyfire "1"
+
+//KillCam
+set scr_killcam "1"
+
+//Freies Umsehen
+set scr_freelook "0"
+
+//Gegner im Zuschauer-Modus beobachten
+set scr_spectateenemy "0"
+
+//PK3-Dateien-Abgleich (0 = an, 1 = aus)
+//Wenn an mssen die pk3s des Servers und der Clients gleich sein!
+set sv_pure "0"
+
+//Automatischer Team-Ausgleich
+set scr_teambalance "1"
+
+//Cheats
+set sv_cheats "0"
+
+//Spam-Schutz
+set sv_floodprotect "1"
+
+//FPS des Servers
+set sv_fps "25"
+
+//Master-Server (wo der Server angemeldet werden soll)
+seta sv_master0 ""
+seta sv_master1 ""
+seta sv_master2 ""
+seta sv_master3 ""
+seta sv_master4 ""
+set g_gamespy "1"
+
+//Tote k?nen mit allen chatten 0 = aus, 1 = an
+set g_deadChat "1"
+
+//Konsolensperre fr Clients
+set sv_disableClientConsole "0"
+
+//Download erlauben
+set sv_allowDownload "1"
+
+//WWW Download erlauben
+set sv_wwwDownload "0"
+
+set sv_wwwBaseURL "http://example.com/"
+set sv_wwwDlDisconnected "0"
+set sv_reconnectlimit "3"
+set sv_dl_maxRate "150000" 
+
+//Voting erlauben
+set g_allowvote "1"
+
+//***
+
+//Waffen-Einstellungen:
+//(0 = verbieten, 1 = erlauben):
+
+//Scharfschuetzengewehre:
+set scr_allow_springfield "1"
+set scr_allow_svt40 "1"
+set scr_allow_kar98ksniper "1"
+set scr_allow_nagantsniper "1"
+set scr_allow_enfieldsniper "1"
+
+//Gewehre:
+set scr_allow_enfield "1"
+set scr_allow_kar98k "1"
+set scr_allow_m1carbine "1"
+set scr_allow_m1garand "1"
+set scr_allow_g43 "1"
+set scr_allow_nagant "1"
+
+//Schwere MG's:
+set scr_allow_bar "1"
+set scr_allow_bren "1"
+set scr_allow_mp44 "1"
+set scr_allow_ppsh "1"
+
+//Leichte MG's:
+set scr_allow_mp40 "1"
+set scr_allow_sten "1"
+set scr_allow_thompson "1"
+set scr_allow_pps42 "1"
+set scr_allow_greasegun "1"
+
+//Panzerfaust:
+set scr_allow_panzerfaust "1"
+
+//Granaten:
+set scr_allow_fraggrenades "1"
+
+//***
+
+//Spiel-Modi-Einstellungen:
+
+//DM (Death Match)
+
+//Punkte-Limit
+set scr_dm_scorelimit "{{ item.score_limit }}"
+
+//Zeit-Limit
+set scr_dm_timelimit "{{ item.time_limit }}"
+
+//TDM (Team Deathmatch)
+//Punkte-Limit
+set scr_tdm_scorelimit "{{ item.score_limit }}"
+
+//Zeit-Limit
+set scr_tdm_timelimit "{{ item.time_limit }}"
+
+//SD (Seach and Destroy)
+//Zeit bis Rundenstart (Sekunden)
+set scr_sd_graceperiod "15"
+
+//Rundenlaenge
+set scr_sd_roundlength "2.5"
+
+//Runden-Limit
+set scr_sd_roundlimit "8"
+
+//Punkte-Limit (Runden)
+set scr_sd_scorelimit "10"
+
+//Zeit-Limit
+set scr_sd_timelimit "{{ item.time_limit }}"
+
+//Zeit bis Explosion der Bombe in Sek.
+set scr_sd_bombtimer "60"
+
+//CTF (Retrival)
+//Punkte-Limit (Runden)
+set scr_re_scorelimit "10"
+
+//Zeit-Limit
+set scr_re_timelimit "20"
+set scr_re_roundlimit "10"
+set scr_re_roundlength "4"
+set scr_re_graceperiod "10"
+
+//HQ
+//Punkte-Limit
+set scr_hq_scorelimit "{{ item.score_limit }}"
+
+//Zeit-Limit
+set scr_hq_timelimit "{{ item.time_limit }}"
+
+//Start-Spiel-Modus
+set g_gametype "{{ item.type }}"
+
+set sv_mapRotation "{{ item.maps }} "
+
+set sv_mapRotationCurrentmap "{{ item.start_map }}"
+
+wait 250
+map_rotate

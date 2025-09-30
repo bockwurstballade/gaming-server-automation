@@ -4,10 +4,6 @@
   vars:
     utils_os_packages_installed__packages: "{{ games_half_life_2_server_installed__libraries }}"
 
-- name: Debug Symlinks
-  ansible.builtin.debug:
-    msg: "symlinks: {{ games_half_life_2_server_installed__symlinks }}"
-
 - name: Install steamcmd
   ansible.builtin.include_role:
     name: roles/utils/os/packages/steamcmd/installed
@@ -19,7 +15,7 @@
     - utils_os_users_service_created__group: "{{ games_half_life_2_server_installed__group }}"
     - utils_os_users_service_created__user: "{{ games_half_life_2_server_installed__user }}"
 
-- name: Ensure permissions on target directory
+- name: Ensure permissions on target directories
   ansible.builtin.include_role:
     name: roles/utils/os/users/service/directory/permissions/granted
   vars:

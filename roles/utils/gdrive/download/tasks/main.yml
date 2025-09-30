@@ -46,15 +46,15 @@
 - name: Download file from Google Drive into temp directory
   when: utils_gdrive_download__temp_mode == true
   block:
-  - name: Ensure presence of download directory (if temp mode)
-    ansible.builtin.tempfile:
-      state: directory
-      suffix: "_download"
-    register: utils_gdrive_download__temp_dir
+  # - name: Ensure presence of download directory (if temp mode)
+  #   ansible.builtin.tempfile:
+  #     state: directory
+  #     suffix: "_download"
+  #   register: utils_gdrive_download__temp_dir
 
-  - name: Promote temp_dir to a higher scope
-    ansible.builtin.set_fact:
-      utils_gdrive_download__temp_dir: "{{ utils_gdrive_download__temp_dir }}"
+  # - name: Promote temp_dir to a higher scope
+  #   ansible.builtin.set_fact:
+  #     utils_gdrive_download__temp_dir: "{{ utils_gdrive_download__temp_dir }}"
 
   - name: Debug Temporary Directory creation
     ansible.builtin.debug:

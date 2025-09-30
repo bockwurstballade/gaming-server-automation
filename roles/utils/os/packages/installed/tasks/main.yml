@@ -16,6 +16,13 @@
         # Condition 2: The architecture isn't already enabled
         - "'i386' not in foreign_architectures.stdout"
       notify: Update APT cache # Good practice after adding an architecture
+      register: dpkg_result
+      changed_when: dpkg_result.changed
+
+    - name: Update apt cache
+      when: dpkg_result.changed # Only run if the architecture was added
+      ansible.builtin.apt:
+        update_cache: yes
 
     - name: Ensure required packages are installed
       ansible.builtin.apt:
@@ -24,3 +31,7 @@
         update_cache: yes
       loop:
         "{{ utils_os_packages_installed__packages }}"
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes

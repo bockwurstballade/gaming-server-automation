@@ -28,11 +28,11 @@
         group: root
         mode: '0644'
 
-    - name: Perform systemctl daemon-Reload
-      ansible.builtin.command:
-        cmd: >-
-          systemctl
-          daemon-reload
-      register: daemonreload
-      failed_when: daemonreload.failed
-      changed_when: daemonreload.changed
+    - name: "Enable {{ utils_os_systemd_service_configured__service_name }} service"
+      systemd:
+        name: "{{ utils_os_systemd_service_configured__service_name }}"
+        enabled: yes
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes

@@ -1,0 +1,53 @@
+- name: Perform actions as user root
+  become: true
+  become_user: root
+  block:
+  - name: Ensure required packages for Python Build are installed
+    ansible.builtin.include_role:
+      name: roles/utils/os/packages/installed
+    vars:
+      utils_os_packages_installed__packages:
+        - "python3"
+        - "python3-pip"
+        - "python3-venv"
+        - "build-essential"
+
+  - name: Install required pip packages to normal environment
+    when: not utils_os_software_build_python_3_dependencies_install__venv
+    ansible.builtin.pip:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - construct
+      - click
+    register: pipdep
+    changed_when: pipdep.changed
+    failed_when: pipdep.failed
+
+  - name: Perform actions when virtual environment was provided
+    when: utils_os_software_build_python_3_dependencies_install__venv
+    block:
+      - name: Create Virtual Environment
+        ansible.builtin.command:
+          cmd: >-
+            python3
+            -m
+            venv
+            {{ utils_os_software_build_python_3_dependencies_install__venv }}
+          creates: "{{ (utils_os_software_build_python_3_dependencies_install__venv, 'bin', 'activate') | ansible.builtin.path_join }}"
+        register: venvcreate
+        failed_when: venvcreate.failed
+        changed_when: venvcreate.changed
+
+      - name: Install required pip packages to virtual environment
+        ansible.builtin.pip:
+          name: "{{ item }}"
+          state: present
+          virtualenv: "{{ utils_os_software_build_python_3_dependencies_install__venv }}"
+        loop:
+          - construct
+          - click
+          - arrow
+        register: pipdep
+        changed_when: pipdep.changed
+        failed_when: pipdep.failed

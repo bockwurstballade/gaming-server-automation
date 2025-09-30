@@ -1,263 +1,133 @@
-- name: Ensure COD1 Dedicated Server is installed
+- name: Ensure Potentially pre-existing service is stopped
+  ansible.builtin.include_role:
+    name: roles/utils/os/systemd/service/stopped
+  vars:
+    utils_os_systemd_service_stopped__service_name: "{{ games_cod1_server_installed__service_name }}"
+
+- name: Ensure required software is installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/installed
+  vars:
+    utils_os_software_installed__name: "{{ item }}"
+  loop: "{{ games_cod1_server_installed__software }}"
+
+- name: Ensure Existence of Service User
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/created
+  vars:
+    - utils_os_users_service_created__group: "{{ games_cod1_server_installed__group_name }}"
+    - utils_os_users_service_created__user: "{{ games_cod1_server_installed__user_name }}"
+
+- name: Ensure required libraries are installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/packages/installed
+  vars:
+    utils_os_packages_installed__packages: "{{ games_cod1_server_installed__libraries }}"
+
+- name: Ensure permissions on target directories
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/directory/permissions/granted
+  vars:
+    utils_os_users_service_directory_permissions_granted__user: "{{ games_cod1_server_installed__user_name }}"
+    utils_os_users_service_directory_permissions_granted__group: "{{ games_cod1_server_installed__group_name }}"
+    utils_os_users_service_directory_permissions_granted__directories: "{{ games_cod1_server_installed__service_directories }}"
+
+- name: Ensure Environment Variables are properly set
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/environment/variables/persisted
+  vars:
+    - utils_os_users_service_environment_variables_persisted__user: "{{ games_cod1_server_installed__user_name }}"
+    - utils_os_users_service_environment_variables_persisted__group: "{{ games_cod1_server_installed__group_name }}"
+    - utils_os_users_service_environment_variables_persisted__service_dir: "{{ games_cod1_server_installed__directory }}"
+
+- name: Ensure expected archives are extracted
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/archive/download_and_extract
+  vars:
+    utils_os_file_archive_download_and_extract__user: "{{ games_cod1_server_installed__user_name }}"
+    utils_os_file_archive_download_and_extract__group: "{{ games_cod1_server_installed__group_name }}"
+    utils_os_file_archive_download_and_extract__src: "{{ item.src }}"
+    utils_os_file_archive_download_and_extract__file_name: "{{ item.file_name }}"
+    utils_os_file_archive_download_and_extract__dest: "{{ item.dest }}"
+  loop: "{{ games_cod1_server_installed__archives }}"
+
+- name: Enforce main cfg Templates
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/template/enforced
+  vars:
+    utils_os_file_template_enforced__directory: "{{ item.directory }}"
+    utils_os_file_template_enforced__file_name: "{{ item.file_name }}"
+    utils_os_file_template_enforced__user: "{{ games_cod1_server_installed__user_name }}"
+    utils_os_file_template_enforced__group: "{{ games_cod1_server_installed__group_name }}"
+  loop: "{{ games_cod1_server_installed__templates }}"
+
+- name: Enforce individual Instance cfg Templates
   become: true
   become_user: root
-  block:
-  - name: "Check if {{ games_cod1_server_installed__service_description }} systemd service exists"
-    ansible.builtin.systemd:
-      name: "{{ games_cod1_server_installed__service_description }}"
-    register: service_check
-    ignore_errors: yes
-    check_mode: yes
+  ansible.builtin.template:
+    src: templates/games/cod1/main/server_instance.cfg.j2
+    dest: "{{ (games_cod1_server_installed__server_main, item.cfg + '.cfg') | ansible.builtin.path_join }}"
+    owner: "{{ games_cod1_server_installed__user_name }}"
+    group: "{{ games_cod1_server_installed__group_name }}"
+    mode: '0644'
+    backup: yes
+  loop: "{{ games_cod1_server_installed__instances }}"
 
-  - name: "Stop {{ games_cod1_server_installed__service_description }} service if it exists"
-    ansible.builtin.systemd:
-      name: "{{ games_cod1_server_installed__service_description }}"
-      state: stopped
-    when: service_check.status.LoadState != 'not-found'
+- name: Create systemd service file for CoD1 instances
+  become: true
+  become_user: root
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/cod1_{{ item.cfg }}.service
+    content: |
+      [Unit]
+      Description=Call of Duty 1 Dedicated Server
+      After=network.target
 
-  - name: Ensure gcc libraries for CoD Server are downloaded
-    ansible.builtin.include_role:
-      name: roles/utils/gdrive/download
-    vars:
-      utils_gdrive_download__file_id: "{{ games_cod1_server_installed__gcc_file_id }}"
-      utils_gdrive_download__file_name: "{{ games_cod1_server_installed__gcc_file_name }}"
-      utils_gdrive_download__temp_mode: "{{ games_cod1_server_installed__temp_mode | default(true) }}"
+      [Service]
+      User={{ games_cod1_server_installed__user_name }}
+      Group={{ games_cod1_server_installed__group_name }}
+      WorkingDirectory={{ games_cod1_server_installed__directory }}
+      Environment="LD_LIBRARY_PATH=/lib:{{ games_cod1_server_installed__directory }}"
+      ExecStart={{ games_cod1_server_installed__execstart + ' +set dedicated ' + item.dedicated | string + ' +set net_port ' + item.port | string + ' +exec ' + ((games_cod1_server_installed__directory, item.cfg + '.cfg') | ansible.builtin.path_join)  }}
+      Restart=on-failure
+      Type=simple
+      KillMode=process
 
-  - name: Ensure Call of Duty 1 Server is installed
-    block:
-    - name: Ensure unzip is installed
-      ansible.builtin.package:
-        name: unzip
-        state: present
+      [Install]
+      WantedBy=multi-user.target
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ games_cod1_server_installed__instances }}"
 
-    - name: "Ensure {{ games_cod1_server_installed__gcc_file_name }} is extracted to /lib/"
-      ansible.builtin.unarchive:
-        src: "{{ (utils_gdrive_download__temp_dir.path, games_cod1_server_installed__gcc_file_name) | ansible.builtin.path_join }}"
-        dest: "{{ [games_cod1_server_installed__lib_dir] | ansible.builtin.path_join }}"
-        mode: '0775'
-        remote_src: true
+    # - name: "Create systemd service file for {{ games_cod1_server_installed__service_name }}"
+    #   ansible.builtin.copy:
+    #     dest: /etc/systemd/system/{{ games_cod1_server_installed__service_name }}.service
+    #     content: |
+    #       [Unit]
+    #       Description={{ games_cod1_server_installed__service_description }}
+    #       After=network.target
 
-    - name: Ensure Service User Group exists
-      ansible.builtin.group:
-        name: "{{ games_cod1_server_installed__group_name }}"
-        state: present
+    #       [Service]
+    #       User={{ games_cod1_server_installed__user_name }}
+    #       Group={{ games_cod1_server_installed__group_name }}
+    #       WorkingDirectory={{ games_cod1_server_installed__directory }}
+    #       Environment="LD_LIBRARY_PATH=/lib:{{ games_cod1_server_installed__directory }}"
+    #       ExecStart={{ games_cod1_server_installed__directory }}/cod_lnxded +set dedicated 2 +set net_port {{ games_cod1_server_installed__port }} +set fs_basepath {{ games_cod1_server_installed__directory }} +exec {{ games_cod1_server_installed__server_cfg }} +set ttycon 0
+    #       Restart=on-failure
+    #       Type=simple
+    #       KillMode=process
 
-    - name: Ensure "{{ games_cod1_server_installed__user_name }}" user exists
-      ansible.builtin.user:
-        name: "{{ games_cod1_server_installed__user_name }}"
-        state: present
-        group: "{{ games_cod1_server_installed__group_name }}"
-        password: "{{ games_cod1_server_installed__user_password }}"
-        shell: /bin/bash # Does not need interactive login
-        home: "/home/{{ games_cod1_server_installed__user_name }}"
-        create_home: true  # Does not need home directory
+    #       [Install]
+    #       WantedBy=multi-user.target
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
 
-    - name: Add i386 architecture
-      ansible.builtin.command: dpkg --add-architecture i386
-      register: dpkg_result
-      changed_when: dpkg_result.rc == 0  # Only mark as changed if successful
-      failed_when: dpkg_result.rc != 0   # Fail if the command returns an error
-
-    - name: Update apt cache
-      ansible.builtin.apt:
-        update_cache: yes
-      when: dpkg_result.changed # Only run if the architecture was added
-
-    - name: Install 32-bit libraries
-      ansible.builtin.apt:
-        name:
-          - libc6:i386
-          - libstdc++6:i386
-        state: present # Ensures the packages are installed
-
-    - name: Ensure CoD1 Server directory exists
-      ansible.builtin.file:
-        path:  "{{ games_cod1_server_installed__directory }}"
-        state: directory
-        mode: '0750'
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-
-    - name: Ensure CoD1 home directory exists
-      ansible.builtin.file:
-        path:  "{{ games_cod1_server_installed__home_directory }}"
-        state: directory
-        mode: '0750'
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-
-    - name: Ensure CoD1 home main directory exists
-      ansible.builtin.file:
-        path:  "{{ [games_cod1_server_installed__home_directory, 'main'] | ansible.builtin.path_join }}"
-        state: directory
-        mode: '0750'
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-
-
-    - name: Ensure LD_LIBRARY_PATH is set in .bashrc for cod1
-      ansible.builtin.lineinfile:
-        path: /home/cod1/.bashrc
-        regexp: '^export LD_LIBRARY_PATH=.*$'
-        line: 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/lib:/games/cod1"'
-        state: present
-        owner: cod1
-        group: cod1
-
-    - name: "Ensure {{ games_cod1_server_installed__gcc_file_name }} is extracted to {{ games_cod1_server_installed__directory }}"
-      ansible.builtin.unarchive:
-        src: "{{ (utils_gdrive_download__temp_dir.path, games_cod1_server_installed__gcc_file_name) | ansible.builtin.path_join }}"
-        dest: "{{ [games_cod1_server_installed__directory] | ansible.builtin.path_join }}"
-        mode: '0775'
-        remote_src: true
-
-    - name: Ensure CoD CD Setup Data is downloaded
-      ansible.builtin.include_role:
-        name: roles/utils/gdrive/download
-      vars:
-        utils_gdrive_download__file_id: "{{ games_cod1_server_installed__setup_data_file_id }}"
-        utils_gdrive_download__file_name: "{{ games_cod1_server_installed__setup_data_file_name }}"
-        utils_gdrive_download__temp_mode: "{{ games_cod1_server_installed__temp_mode | default(true) }}"
-
-    - name: "Ensure CoD CD Setup Data is extracted to {{ games_cod1_server_installed__directory }}"
-      ansible.builtin.unarchive:
-        src: "{{ (utils_gdrive_download__temp_dir.path, games_cod1_server_installed__setup_data_file_name) | ansible.builtin.path_join }}"
-        dest: "{{ [games_cod1_server_installed__directory] | ansible.builtin.path_join }}"
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0775'
-        remote_src: true
-
-    - name: Ensure CoD 1.5 Linux Server Base is downloaded
-      ansible.builtin.include_role:
-        name: roles/utils/gdrive/download
-      vars:
-        utils_gdrive_download__file_id: "{{ games_cod1_server_installed__one_five_server_base_file_id }}"
-        utils_gdrive_download__file_name: "{{ games_cod1_server_installed__one_five_server_base_file_name }}"
-        utils_gdrive_download__temp_mode: "{{ games_cod1_server_installed__temp_mode | default(true) }}"
-
-    - name: "Ensure CoD 1.5 Linux Server Base is extracted to {{ games_cod1_server_installed__directory }}"
-      ansible.builtin.unarchive:
-        src: "{{ (utils_gdrive_download__temp_dir.path, games_cod1_server_installed__one_five_server_base_file_name) | ansible.builtin.path_join }}"
-        dest: "{{ [games_cod1_server_installed__directory] | ansible.builtin.path_join }}"
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0775'
-        remote_src: true
-
-    - name: Ensure CoD 1.5b Linux Server Base is downloaded
-      ansible.builtin.include_role:
-        name: roles/utils/gdrive/download
-      vars:
-        utils_gdrive_download__file_id: "{{ games_cod1_server_installed__one_fiveb_server_base_file_id }}"
-        utils_gdrive_download__file_name: "{{ games_cod1_server_installed__one_fiveb_server_base_file_name }}"
-        utils_gdrive_download__temp_mode: "{{ games_cod1_server_installed__temp_mode | default(true) }}"
-
-    - name: "Ensure CoD 1.5b Linux Server Base is extracted to {{ games_cod1_server_installed__directory }}"
-      ansible.builtin.unarchive:
-        src: "{{ (utils_gdrive_download__temp_dir.path, games_cod1_server_installed__one_fiveb_server_base_file_name) | ansible.builtin.path_join }}"
-        dest: "{{ [games_cod1_server_installed__directory] | ansible.builtin.path_join }}"
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0775'
-        remote_src: true
-
-    - name: Create autoexec_mp.cfg with map configuration
-      ansible.builtin.copy:
-        dest: "{{ games_cod1_server_installed__directory }}/main/autoexec_mp.cfg"
-        content: |
-          map mp_harbor
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0644'
-
-    - name: "Ensure {{ games_cod1_server_installed__server_cfg }} exists with correct content"
-      ansible.builtin.template:
-        src: templates/server.cfg.j2
-        dest: "{{ games_cod1_server_installed__directory }}/main/{{ games_cod1_server_installed__server_cfg }}"
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0644'
-        backup: yes
-
-    - name: Ensure config_mp.cfg file exists with specified content
-      ansible.builtin.template:
-        src: templates/config_mp.cfg.j2
-        dest: "{{ games_cod1_server_installed__directory }}/main/config_mp.cfg"
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0644'
-        backup: yes
-
-    - name: Ensure config_mp.cfg file exists in /home/cod1/.callofduty
-      ansible.builtin.template:
-        src: templates/config_mp.cfg.j2
-        dest: /home/cod1/.callofduty/main/config_mp.cfg
-        owner: "{{ games_cod1_server_installed__user_name }}"
-        group: "{{ games_cod1_server_installed__group_name }}"
-        mode: '0644'
-        backup: yes
-
-    - name: Create systemd service file for CoD1
-      when: games_cod1_server_installed__cd_check == true
-      ansible.builtin.copy:
-        dest: /etc/systemd/system/cod1.service
-        content: |
-          [Unit]
-          Description=Call of Duty 1 Dedicated Server
-          After=network.target
-
-          [Service]
-          User={{ games_cod1_server_installed__user_name }}
-          Group={{ games_cod1_server_installed__group_name }}
-          WorkingDirectory={{ games_cod1_server_installed__directory }}
-          Environment="LD_LIBRARY_PATH=/lib:{{ games_cod1_server_installed__directory }}"
-          ExecStart={{ games_cod1_server_installed__directory }}/cod_lnxded +set dedicated 2 +set net_port {{ games_cod1_server_installed__port }} +set fs_basepath /games/cod1/ +exec {{ games_cod1_server_installed__server_cfg }} +map mp_harbor +set ttycon 0
-          Restart=on-failure
-          Type=simple
-          KillMode=process
-
-          [Install]
-          WantedBy=multi-user.target
-        owner: root
-        group: root
-        mode: '0644'
-
-    - name: "Create systemd service file for {{ games_cod1_server_installed__service_name }}"
-      ansible.builtin.copy:
-        dest: /etc/systemd/system/{{ games_cod1_server_installed__service_name }}.service
-        content: |
-          [Unit]
-          Description={{ games_cod1_server_installed__service_description }}
-          After=network.target
-
-          [Service]
-          User={{ games_cod1_server_installed__user_name }}
-          Group={{ games_cod1_server_installed__group_name }}
-          WorkingDirectory={{ games_cod1_server_installed__directory }}
-          Environment="LD_LIBRARY_PATH=/lib:{{ games_cod1_server_installed__directory }}"
-          ExecStart={{ games_cod1_server_installed__directory }}/cod_lnxded +set dedicated 2 +set net_port {{ games_cod1_server_installed__port }} +set fs_basepath {{ games_cod1_server_installed__directory }} +exec {{ games_cod1_server_installed__server_cfg }} +set ttycon 0
-          Restart=on-failure
-          Type=simple
-          KillMode=process
-
-          [Install]
-          WantedBy=multi-user.target
-        owner: root
-        group: root
-        mode: '0644'
-
-    - name: Reload systemd daemon
-      systemd:
-        daemon_reload: yes
-
-    - name: Enable CoD1 service
-      systemd:
-        name: "{{ games_cod1_server_installed__service_name }}"
-        enabled: yes
-
-    - name: Disable CD Key Check if disabled
-      ansible.builtin.include_role:
-        name: roles/games/cod1/server/serial_check_disabled
-      vars:
-        cd_check: "{{ games_cod1_server_installed__cd_check }}"
+- name: Disable CD Key Check if disabled
+  ansible.builtin.include_role:
+    name: roles/games/cod1/server/serial_check_disabled
+  vars:
+    games_cod1_server_serial_check_disabled__cd_check: "{{ item.cd_check }}"
+    games_cod1_server_serial_check_disabled__port: "{{ item.port }}"
+  loop: "{{ games_cod1_server_installed__instances }}"

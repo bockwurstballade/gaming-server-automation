@@ -1,0 +1,12 @@
+- name: Ensure pboutil is downloaded
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/download
+  vars:
+    utils_os_software_download__src: "https://gitlab.com/arma3-server-tools/pboutil.git"
+    utils_os_software_download__dest: "{{ utils_os_software_pboutil_installed__dir }}"
+
+- name: Ensure Python3 dependencies are installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/build/python/3/dependencies/install
+  vars:
+    utils_os_software_build_python_3_dependencies_install__venv: "{{ utils_os_software_pboutil_installed__dir }}"

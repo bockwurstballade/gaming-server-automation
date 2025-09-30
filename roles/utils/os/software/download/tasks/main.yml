@@ -1,0 +1,41 @@
+- name: Perform actions as user root
+  become: true
+  become_user: root
+  block:
+    - name: Ensure Target Directory Exists
+      ansible.builtin.file:
+        path: "{{ utils_os_software_download__dest }}"
+        state: directory
+        owner: "{{ utils_os_software_download__user }}"
+        group: "{{ utils_os_software_download__group }}"
+        mode: "{{ utils_os_software_download__mode }}"
+
+    - name: Download using git clone
+      when: utils_os_software_download__src.endswith('.git')
+      ansible.builtin.include_role:
+        name: roles/utils/os/software/download/via_git
+      vars:
+        utils_os_software_download_via_git__dest: "{{ utils_os_software_download__dest }}"
+        utils_os_software_download_via_git__repo: "{{ utils_os_software_download__src }}"
+        utils_os_software_download_via_git__user: "{{ utils_os_software_download__user }}"
+        utils_os_software_download_via_git__group: "{{ utils_os_software_download__group }}"
+        utils_os_software_download_via_git__mode: "{{ utils_os_software_download__mode }}"
+
+    - name: Download file from Google Drive via gdown
+      # this matches Google Drive File IDs:
+      when: utils_os_software_download__src | regex_search('^[a-zA-Z0-9_-]{28,33}$')
+      ansible.builtin.include_role:
+        name: roles/utils/gdrive/download
+      vars:
+        utils_gdrive_download__file_id: "{{ utils_os_software_download__src }}"
+        utils_gdrive_download__file_name: "{{ utils_os_software_download__file_name }}"
+        utils_gdrive_download__temp_mode: "{{ utils_os_software_download__temp_mode | default(true) }}"
+        utils_gdrive_download__temp_dir: "{{ utils_os_software_download__dl_dir }}"
+
+    - name: Ensure File Permissions on Target Directory
+      ansible.builtin.file:
+        path: "{{ utils_os_software_download__dest }}"
+        state: directory
+        owner: "{{ utils_os_software_download__user }}"
+        group: "{{ utils_os_software_download__group }}"
+        recurse: true

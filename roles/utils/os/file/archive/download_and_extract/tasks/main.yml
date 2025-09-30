@@ -1,0 +1,51 @@
+- name: Ensure required software for archive extraction is installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/installed
+  vars:
+    utils_os_software_installed__name: "{{ item }}"
+  loop:
+    - unzip
+
+- name: Perform actions as user root
+  become: true
+  become_user: root
+  block:
+    - name: Perform actions as user root with tempdir
+      when:  roles_utils_os_file_archive_download_and_extract__temp_mode
+      block:
+        - name: Ensure presence of temporary download directory (if temp mode)
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: "_download"
+          register: utils_os_file_archive_download_and_extract__temp_dir
+
+        - name: Download archive to temporary directory
+          ansible.builtin.include_role:
+            name: roles/utils/os/software/download
+          vars:
+            utils_os_software_download__src: "{{ utils_os_file_archive_download_and_extract__src }}"
+            utils_os_software_download__dest: "{{ utils_os_file_archive_download_and_extract__dest }}"
+            utils_os_software_download__file_name: "{{ utils_os_file_archive_download_and_extract__file_name }}"
+            utils_os_software_download__user: "{{ utils_os_file_archive_download_and_extract__user }}"
+            utils_os_software_download__group: "{{ utils_os_file_archive_download_and_extract__group }}"
+            utils_os_software_download__dl_dir: "{{ utils_os_file_archive_download_and_extract__temp_dir }}"
+
+        - name: Debug temp dir
+          ansible.builtin.debug:
+            msg: "temp dir: {{ utils_os_file_archive_download_and_extract__temp_dir }}, path: {{ utils_os_file_archive_download_and_extract__temp_dir.path }}"
+
+        - name: Extract file from temporary directory to target directory
+          become: true
+          become_user: root
+          ansible.builtin.unarchive:
+            src: "{{ (utils_os_file_archive_download_and_extract__temp_dir.path, utils_os_file_archive_download_and_extract__file_name) | ansible.builtin.path_join }}"
+            dest: "{{ [utils_os_file_archive_download_and_extract__dest] | ansible.builtin.path_join }}"
+            mode: "{{ utils_os_file_archive_download_and_extract__mode }}"
+            remote_src: true
+
+    - name: Ensure file permissions of destination directory
+      ansible.builtin.file:
+        path: "{{ [utils_os_file_archive_download_and_extract__dest] | ansible.builtin.path_join }}"
+        owner: "{{ utils_os_file_archive_download_and_extract__user }}"
+        group: "{{ utils_os_file_archive_download_and_extract__group }}"
+        recurse: true

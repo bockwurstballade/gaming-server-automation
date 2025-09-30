@@ -1,0 +1,9 @@
+- name: "Ensure Service {{ utils_os_systemd_service_state__service_name }} is {{ utils_os_systemd_service_state__action }}"
+  become: true
+  become_user: root
+  ansible.builtin.systemd:
+    name: "{{ utils_os_systemd_service_state__service_name }}"
+    state: "{{ utils_os_systemd_service_state__action }}"
+  register: utils_os_systemd_service_state__result
+  failed_when: false # if service doesnt exist, dont fail the playbook
+  changed_when: utils_os_systemd_service_state__result.changed

@@ -21,6 +21,6 @@ games_half_life_1_server_installed__service_description: "Half Life 1 Server"
 games_half_life_1_server_installed__execstart: "{{ games_half_life_1_server_installed__directory + '/hlds_run -game valve +maxplayers 32 +map bounce -port 27020' }}"
 
 # Links
-games_half_life_2_server_installed__symlinks:
+games_half_life_1_6_server_installed__symlinks:
   - orig: "/opt/steamcmd/linux32/steamclient.so"
-    link: "{{ (games_half_life_2_server_installed__sdk32, 'steamclient.so') | ansible.builtin.path_join }}"
+    link: "{{ (games_cs_1_6_server_installed__sdk32, 'steamclient.so') | ansible.builtin.path_join }}"

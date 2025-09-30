@@ -1,0 +1,15 @@
+- name: Perform actions as user root
+  become: true
+  become_user: root
+  block:
+    - name: Ensure required git package is installed
+      ansible.builtin.include_role:
+        name: roles/utils/os/packages/installed
+      vars:
+        utils_os_packages_installed__packages:
+          - git
+
+    - name: "Ensure Git Repository {{ utils_os_software_download_via_git__repo }} is cloned"
+      ansible.builtin.git:
+        repo: "{{ utils_os_software_download_via_git__repo }}"
+        dest: "{{ utils_os_software_download_via_git__dest }}"

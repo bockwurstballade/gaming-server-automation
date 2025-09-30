@@ -1,0 +1,61 @@
+
+# Users and Groups
+games_arma_3_server_installed__user: "{{ arma3_user | default('arma3') }}"
+games_arma_3_server_installed__group: "{{ arma3_group | default('steam') }}"
+games_arma_3_server_installed__steam_user: "{{ steam_user }}"
+games_arma_3_server_installed__steam_password: "{{ steam_password }}"
+games_arma_3_server_installed__steam_guard_code: "{{ steam_guard_code }}"
+
+# Network
+games_arma_3_server_installed__port: "{{ arma3_port | default(2302) }}"
+
+# Directories
+games_arma_3_server_installed__service_user_home: "{{ ('/', 'home', games_arma_3_server_installed__user) | ansible.builtin.path_join }}"
+games_arma_3_server_installed__service_user_home_steam: "{{ (games_arma_3_server_installed__service_user_home, '.steam') | ansible.builtin.path_join }}"
+games_arma_3_server_installed__service_user_home_sdk32: "{{ (games_arma_3_server_installed__service_user_home_steam, 'sdk32') | ansible.builtin.path_join }}"
+games_arma_3_server_installed__directory: "{{ dafrk__arma_3_server.directories.server.path | default('/games/arma3/') }}"
+games_arma_3_server_installed__hl2mp_dir: "{{ (games_arma_3_server_installed__directory, 'hl2mp') | ansible.builtin.path_join }}"
+games_arma_3_server_installed__cfg_dir: "{{ (games_arma_3_server_installed__hl2mp_dir, 'cfg') | ansible.builtin.path_join }}"
+games_arma_3_server_installed__lib_subdir: "{{ (games_arma_3_server_installed__directory, 'linux64') | ansible.builtin.path_join }}"
+games_arma_3_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_arma_3_server_installed__directory }}"
+ - "{{ games_arma_3_server_installed__lib_subdir | default('') }}"
+ - "{{ games_arma_3_server_installed__service_user_home }}"
+ - "{{ (games_arma_3_server_installed__service_user_home, '.steam', 'sdk32') | ansible.builtin.path_join }}"
+games_arma_3_server_installed__ld_library_path_string: "{{ games_arma_3_server_installed__ld_library_path_dirs | unique | join(':') }}"
+games_arma_3_server_installed__service_directories:
+ - "{{ games_arma_3_server_installed__directory }}"
+ - "{{ games_arma_3_server_installed__service_user_home }}"
+ - "{{ games_arma_3_server_installed__service_user_home_steam }}"
+ - "{{ games_arma_3_server_installed__service_user_home_sdk32 }}"
+games_arma_3_server_installed__mpmissions: "{{ (games_arma_3_server_installed__directory, 'mpmissions') | ansible.builtin.path_join }}"
+
+# Files
+games_arma_3_server_installed__config_path: "{{ arma3_default_config_path | default((games_arma_3_server_installed__directory, 'server.cfg') | ansible.builtin.path_join) }}"
+
+# Archives
+games_arma_3_server_installed__archives:
+  - description: "Original vendor-supplied Multiplayer Missions"
+    src: "1KADf1yxioA8cvICEiUOrZvRnMh2vxKaU"
+    file_name: "original_mp_missions.zip"
+    dest: "{{ games_arma_3_server_installed__mpmissions }}"
+# systemd:
+games_arma_3_server_installed__service_name: "{{ arma3_service_name | default('arma3') }}"
+games_arma_3_server_installed__service_description: "{{ arma3_service_description | default('ARMA 3 Server') }}"
+games_arma_3_server_installed__execstart: "{{ (games_arma_3_server_installed__directory, 'arma3server') | ansible.builtin.path_join }} -config={{ games_arma_3_server_installed__config_path }} -port={{ games_arma_3_server_installed__port }}"
+# Secrets
+games_arma_3_server_installed__server_password: "{{ arma3_server_password }}"
+games_arma_3_server_installed__admin_password: "{{ arma3_admin_password }}"
+
+# Software
+games_arma_3_server_installed__software:
+  - "pboutil"
+
+# Links
+games_arma_3_server_installed__symlinks:
+  - orig: "/opt/steamcmd/linux32/steamclient.so"
+    link: "{{ (games_arma_3_server_installed__service_user_home_sdk32, 'steamclient.so') | ansible.builtin.path_join }}"

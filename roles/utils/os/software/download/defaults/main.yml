@@ -1,0 +1,3 @@
+utils_os_software_download__user: root
+utils_os_software_download__group: root
+utils_os_software_download__mode: '0755'

@@ -1,0 +1,23 @@
+- name: Debug software name
+  ansible.builtin.debug:
+    msg: "name: {{ utils_os_software_installed__name }}"
+
+- name: Determine if specific role for that particular software Exists
+  delegate_to: localhost
+  ansible.builtin.stat:
+    # We check for a core file within the role's expected directory.
+    # 'playbook_dir' is a magic variable for the directory containing the playbook.
+    path: "/home/dafrk/ansible/roles/utils/os/software/{{ utils_os_software_installed__name }}/installed/tasks/main.yml"
+  register: role_check
+  # This task should always run, regardless of other conditions
+
+- name: Debug stat
+  ansible.builtin.debug:
+    msg: "stat: {{ role_check }}"
+
+- name: Perform actions as user root
+  when: role_check.stat.exists
+  block:
+    - name: "Include the role '{{ utils_os_software_installed__name }}' because it exists"
+      ansible.builtin.include_role:
+        name: "roles/utils/os/software/{{ utils_os_software_installed__name }}/installed"

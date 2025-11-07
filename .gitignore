@@ -1,0 +1,7 @@
+secrets/
+secrets/*
+inventory/
+inventory/*
+roles/games/cod2/libcod_installed/
+roles/games/cod2/serial_check_disabled/
+roles/games/cod1/serial_check_disabled/

@@ -1,0 +1,49 @@
+# Users and Groups
+games_ut_2004_server_installed__user: "{{ user | default('ut2004') }}" # must be same user as for CS 1.6 Server
+games_ut_2004_server_installed__group: "{{ group | default('ut2004') }}"
+# Directories
+games_ut_2004_server_installed__service_user_home: "{{ ('/', 'home', games_ut_2004_server_installed__user) | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__service_user_home_steam: "{{ (games_ut_2004_server_installed__service_user_home, '.steam') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__service_user_home_sdk32: "{{ (games_ut_2004_server_installed__service_user_home_steam, 'sdk32') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__directory: "{{ dafrk__ut_2004_server.directories.server.path | default('/games/ut2004/') }}"
+games_ut_2004_server_installed__tf_dir: "{{ (games_ut_2004_server_installed__directory, 'tf') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__cfg_dir: "{{ (games_ut_2004_server_installed__tf_dir, 'cfg') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__lib_subdir: "{{ (games_ut_2004_server_installed__directory, 'bin', 'linux64') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/usr/lib/x86_64-linux-gnu"
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_ut_2004_server_installed__directory }}"
+ - "{{ games_ut_2004_server_installed__lib_subdir | default('') }}"
+ - "{{ (games_ut_2004_server_installed__directory, 'bin') | ansible.builtin.path_join }}"
+ - "{{ games_ut_2004_server_installed__service_user_home }}"
+ - "{{ (games_ut_2004_server_installed__service_user_home, '.steam', 'sdk32') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__ld_library_path_string: "{{ games_ut_2004_server_installed__ld_library_path_dirs | unique | join(':') }}"
+games_ut_2004_server_installed__service_directories:
+ - "{{ games_ut_2004_server_installed__directory }}"
+ - "{{ games_ut_2004_server_installed__service_user_home }}"
+ # Libraries
+games_ut_2004_server_installed__libraries:
+  - "gcc-multilib"
+  - "lib32z1"
+  - "lib32ncurses6"
+  - "libstdc++5:i386"
+
+# systemd
+games_ut_2004_server_installed__service_name: ut2004
+games_ut_2004_server_installed__service_description: "Unreal Tournament 2004 Server"
+games_ut_2004_server_installed__execstart: "{{ games_ut_2004_server_installed__directory + 'srcds_run -console -game tf -RCONPort=25575 +maxplayers ' + games_ut_2004_server_installed__max_players | string + ' +ip ' + games_ut_2004_server_installed__ip + ' +clientport ' + games_ut_2004_server_installed__client_port | string + ' +map cp_dustbowl +exec server.cfg +hostport ' + games_ut_2004_server_installed__port | string }}"
+
+# Links
+games_ut_2004_server_installed__symlinks:
+  - orig: "/opt/steamcmd/linux32/steamclient.so"
+    link: "{{ (games_ut_2004_server_installed__service_user_home_sdk32, 'steamclient.so') | ansible.builtin.path_join }}"
+
+# Server Settings
+games_ut_2004_server_installed__rcon_password: "{{ rcon_password }}"
+games_ut_2004_server_installed__max_players: 24
+games_ut_2004_server_installed__client_port: 27005
+games_ut_2004_server_installed__port: 27090
+games_ut_2004_server_installed__ip: 152.53.231.31

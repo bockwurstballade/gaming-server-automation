@@ -81,6 +81,7 @@ games_cod1_server_installed__server_password: "{{ server_password }}"
 games_cod1_server_installed__server_max_players: "{{ server_password }}"
 
 # Environment Variables
+
 games_cod1_server_installed__ld_library_path_dirs:
  - "/lib/i386-linux-gnu" # must be first for 32 bit games
  - "/lib"
@@ -106,6 +107,8 @@ games_cod1_server_installed__software:
 ## systemd
 games_cod1_server_installed__service_name: cod1
 games_cod1_server_installed__execstart: "{{ (games_cod1_server_installed__directory, 'cod_lnxded') | ansible.builtin.path_join }} +set fs_basepath {{ games_cod1_server_installed__directory }} +map mp_harbor +set ttycon 0"
+
+games_cod_uo_server_installed__public_ip: "{{ dafrk__cod_uo_server.public_ip }}"
 
 ## Directories
 

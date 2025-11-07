@@ -1,7 +1,7 @@
 - name: Set IPTable Rules to disable CD Check
   become: true
   become_user: root
-  when: games_cod1_server_serial_check_disabled__cd_check  # Only run if variable is true
+  when: not games_cod1_server_serial_check_disabled__cd_check  # Only run if variable is false
   block:
     - name: Ensure iptables is installed
       ansible.builtin.package:

@@ -3,20 +3,68 @@ games_cod2_server_installed__user_name: "{{ dafrk__cod2_server.user.name | defau
 games_cod2_server_installed__user_password: "{{ service_user_pw | password_hash('sha512') }}"
 games_cod2_server_installed__group_name: "{{ dafrk__cod2_server.group.name | default('cod2') }}"
 
+
 # Download
 games_cod2_server_installed__temp_mode: true
 games_cod2_server_installed__download_dir: "{{ utils_gdrive_download__temp_dir.path | default('/tmp/') }}"
 
 # Installation Files
+## Archives
+games_cod2_server_installed__archives:
+  - src: "{{ games_cod2_server_installed__gcc_file_id }}"
+    file_name: "{{ games_cod2_server_installed__gcc_file_name }}"
+    dest: "{{ games_cod2_server_installed__lib_dir }}"
+    user: root
+    group: root
+    mode: '0775'
+  - src: "{{ games_cod2_server_installed__setup_data_file_id }}"
+    file_name: "{{ games_cod2_server_installed__setup_data_file_name }}"
+    dest: "{{ games_cod2_server_installed__directory }}"
+    user: "{{ games_cod2_server_installed__user_name }}"
+    group: "{{ games_cod2_server_installed__group_name }}"
+    mode: '0775'
+  - src: "{{ games_cod2_server_installed__one_three_server_base_file_id }}"
+    file_name: "{{ games_cod2_server_installed__one_three_server_base_file_name }}"
+    dest: "{{ games_cod2_server_installed__directory }}"
+    user: "{{ games_cod2_server_installed__user_name }}"
+    group: "{{ games_cod2_server_installed__group_name }}"
+    mode: '0775'
+
 ## GCC Libraries
 games_cod2_server_installed__lib_dir: "{{  dafrk__os.directories.lib_dir.path | default('/tmp/') }}"
 games_cod2_server_installed__gcc_file_id: "{{ dafrk__cod2_server.files.gcc.file_id }}"
 games_cod2_server_installed__gcc_file_name: "{{ dafrk__cod2_server.files.gcc.file_name | default('gcc3-libs.tar.bz2') }}"
 
+## Libraries
+games_cod2_server_installed__packages:
+  - unzip
+  - libc6:i386
+  - libstdc++6:i386
+
+games_cod2_server_installed__ld_library_path: "{{ games_cod2_server_installed__ld_library_path_dirs }}"
+games_cod2_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_cod2_server_installed__directory }}"
+ - "{{ games_cod2_server_installed__server_main | default('') }}"
+ - "{{ games_cod2_server_installed__home_directory }}"
+
+games_cod2_server_installed__ld_library_path_string: "{{ games_cod2_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
+
+games_cod2_server_installed__systemd_environment_extra: >-
+  {{ '' if games_cod2_server_installed__cd_check | bool else '" "LD_PRELOAD=' ~ games_cod2_server_installed__directory ~ '/libcod2_1_3_nomysql.so' }}
+
+games_cod2_server_installed__execstart: >-
+  {{ games_cod2_server_installed__directory }}/cod2_lnxded +set dedicated 2 +set net_port {{ games_cod2_server_installed__port }}{{ ' +set sv_cracked 1' if not games_cod2_server_installed__cd_check | bool else '' }} +set fs_basepath {{ games_cod2_server_installed__directory }} +exec {{ games_cod2_server_installed__server_cfg }} +set ttycon 0
+
 ## COD2 Linux Server Base
 games_cod2_server_installed__server_version: "{{ dafrk__cod2_server.directories.cod2_server.version | default('1.3') }}"
 games_cod2_server_installed__directory: "{{ dafrk__cod2_server.directories.cod2_server.path | default('/games/cod2/') }}"
 games_cod2_server_installed__home_directory: "{{ dafrk__cod2_server.directories.cod_home.path | default('/home/cod2/') }}"
+games_cod2_server_installed__server_main: "{{ (games_cod2_server_installed__directory, 'main') | ansible.builtin.path_join }}"
 games_cod2_server_installed__one_three_server_base_file_id: "{{ dafrk__cod2_server.files.one_three_server_base.file_id }}"
 games_cod2_server_installed__one_three_server_base_file_name: "{{ dafrk__cod2_server.files.one_three_server_base.file_name }}"
 
@@ -25,6 +73,10 @@ games_cod2_server_installed__setup_data_file_id: "{{ dafrk__cod2_server.files.se
 games_cod2_server_installed__setup_data_file_name: "{{ dafrk__cod2_server.files.setup_data.file_name }}"
 
 ## systemd Daemon Settings
+games_cod2_server_installed__service_stop_targets:
+  - cod2
+  - cod2_no_cd
+
 games_cod2_server_installed__service_name: "{{ 'cod2' if cd_check | default(true) else 'cod2_no_cd' }}"
 games_cod2_server_installed__service_description: "{{ 'Call of Duty 2 Dedicated Server' if cd_check | default(true) else 'Call of Duty 2 Dedicated Server - No CD' }}"
 
@@ -39,3 +91,15 @@ games_cod2_server_installed__admin: "{{ dafrk__cod2_server.instance_no_1.admin }
 games_cod2_server_installed__rcon_password: "{{ rcon_password }}"
 games_cod2_server_installed__server_password: "{{ server_password }}"
 games_cod2_server_installed__server_max_players: "{{ dafrk__cod2_server.instance_no_1.max_players }}"
+
+# Instances
+games_cod2_server_installed__instances: "{{ dafrk_cod2_server_instances }}"
+
+## Templates
+games_cod2_server_installed__templates:
+  - description: "automatically loaded default config"
+    directory: "{{ games_cod2_server_installed__directory }}/main/"
+    file_name: "autoexec_mp.cfg"
+  - description: "Main server config"
+    directory: "{{ games_cod2_server_installed__directory }}/main/"
+    file_name: "server.cfg"

@@ -1,0 +1,20 @@
+- name: Ensure required libraries are installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/packages/installed
+  vars:
+    utils_os_packages_installed__packages: "{{ games_ut_2004_server_installed__libraries }}"
+
+- name: Ensure Existence of Service User
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/created
+  vars:
+    - utils_os_users_service_created__group: "{{ games_ut_2004_server_installed__group }}"
+    - utils_os_users_service_created__user: "{{ games_ut_2004_server_installed__user }}"
+
+- name: Ensure permissions on target directories
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/directory/permissions/granted
+  vars:
+    utils_os_users_service_directory_permissions_granted__user: "{{ games_ut_2004_server_installed__user }}"
+    utils_os_users_service_directory_permissions_granted__group: "{{ games_ut_2004_server_installed__group }}"
+    utils_os_users_service_directory_permissions_granted__directories: "{{ games_ut_2004_server_installed__service_directories }}"

@@ -73,32 +73,6 @@
     backup: yes
   loop: "{{ games_ut_2004_server_installed__instances }}"
 
-# - name: Create systemd service file for UT2004 Server instances
-#   become: true
-#   become_user: root
-#   ansible.builtin.copy:
-#     dest: /etc/systemd/system/{{ item.systemd_name }}.service
-#     content: |
-#       [Unit]
-#       Description={{ item.systemd_description }}
-#       After=network.target
-
-#       [Service]
-#       User={{ games_ut_2004_server_installed__user }}
-#       Group={{ games_ut_2004_server_installed__group }}
-#       WorkingDirectory={{ games_ut_2004_server_installed__directory }}
-#       Environment="LD_LIBRARY_PATH={{ games_ut_2004_server_installed__ld_library_path_string }}"
-#       ExecStart={{ item.execstart }}
-#       Type=simple
-#       KillMode=process
-
-#       [Install]
-#       WantedBy=multi-user.target
-#     owner: root
-#     group: root
-#     mode: '0644'
-#   loop: "{{ games_ut_2004_server_installed__instances }}"
-
 - name: Create systemd service files for UT200 Server Instances
   ansible.builtin.include_role:
     name: roles/utils/os/systemd/service/configured

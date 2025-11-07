@@ -45,6 +45,7 @@
 
     - name: Ensure file permissions of destination directory
       ansible.builtin.file:
+        state: directory
         path: "{{ [utils_os_file_archive_download_and_extract__dest] | ansible.builtin.path_join }}"
         owner: "{{ utils_os_file_archive_download_and_extract__user }}"
         group: "{{ utils_os_file_archive_download_and_extract__group }}"

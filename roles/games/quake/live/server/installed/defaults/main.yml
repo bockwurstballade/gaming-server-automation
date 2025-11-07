@@ -1,8 +1,8 @@
 # User and Group
 ## Quake Live
-games_quake_live_server_installed__user_name: "{{ dafrk__quake_live_server.user.name | default('ql') }}"
+games_quake_live_server_installed__user: "{{ dafrk__quake_live_server.user.name | default('ql') }}"
 games_quake_live_server_installed__user_password: "{{ service_user_pw | password_hash('sha512') }}"
-games_quake_live_server_installed__group_name: "{{ dafrk__quake_live_server.group.name | default('steam') }}"
+games_quake_live_server_installed__group: "{{ dafrk__quake_live_server.group.name | default('steam') }}"
 
 
 ##steamcmd
@@ -11,10 +11,26 @@ games_quake_live_server_installed__steam_group_name: steam
 games_quake_live_server_installed__steam_user_home: "{{ ('/', 'home', 'steam') | ansible.builtin.path_join }}"
 
 # Directories
+games_quake_live_server_installed__service_user_home: "{{ ('/', 'home', games_quake_live_server_installed__user) | ansible.builtin.path_join }}"
+games_quake_live_server_installed__service_user_home_steam: "{{ (games_quake_live_server_installed__service_user_home, '.steam') | ansible.builtin.path_join }}"
+games_quake_live_server_installed__service_user_home_sdk32: "{{ (games_quake_live_server_installed__service_user_home_steam, 'sdk32') | ansible.builtin.path_join }}"
 games_quake_live_server_installed__steamcmd: "{{ ('/', 'opt', 'steamcmd') | ansible.builtin.path_join }}"
 games_quake_live_server_installed__directory: "{{ dafrk__quake_live_server.directories.server.path | default('/games/quake_live/') }}"
 games_quake_live_server_installed__service_user_home: "{{ ('/', 'home', games_quake_live_server_installed__user_name) | ansible.builtin.path_join }}"
+games-half_life_2_server_installed__lib_subdir: "{{ (games_quake_live_server_installed__directory, 'linux64') | ansible.builtin.path_join }}"
 games_quake_live_server_installed__baseq3: "{{ dafrk__quake_live_server.directories.baseq3.path | default('/games/quake_live/baseq3') }}"
+games_quake_live_server_installed__service_directories:
+ - "{{ games_quake_live_server_installed__directory }}"
+ - "{{ games_quake_live_server_installed__service_user_home }}"
+ - "{{ games_quake_live_server_installed__service_user_home_steam }}"
+ - "{{ games_quake_live_server_installed__service_user_home_sdk32 }}"
+ - "{{ games_quake_live_server_installed__baseq3 }}"
+
+# Links
+games_quake_live_server_installed__symlinks:
+  - orig: "/opt/steamcmd/linux32/steamclient.so"
+    link: "{{ (games_quake_live_server_installed__service_user_home_sdk32, 'steamclient.so') | ansible.builtin.path_join }}"
+
 
 # Files
 games_quake_live_server_installed__servercfg: "{{ dafrk__quake_live_server.files.servercfg.name | default('server.cfg') }}"

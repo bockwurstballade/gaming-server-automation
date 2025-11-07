@@ -35,6 +35,7 @@
             msg: "temp dir: {{ utils_os_file_archive_download_and_extract__temp_dir }}, path: {{ utils_os_file_archive_download_and_extract__temp_dir.path }}"
 
         - name: Extract file from temporary directory to target directory
+          when: not utils_os_file_archive_download_and_extract__strip_top_level
           become: true
           become_user: root
           ansible.builtin.unarchive:
@@ -42,6 +43,21 @@
             dest: "{{ [utils_os_file_archive_download_and_extract__dest] | ansible.builtin.path_join }}"
             mode: "{{ utils_os_file_archive_download_and_extract__mode }}"
             remote_src: true
+  
+        - name: Extra file from temporary directory to target directory (stripping components)
+          when:
+            - utils_os_file_archive_download_and_extract__strip_top_level
+            - utils_os_file_archive_download_and_extract__file_name is regex('.*\.tar\.(gz|bz2|xz)$')
+          become: true
+          become_user: root
+          ansible.builtin.command:
+            argv:
+              - tar
+              - xf
+              - "{{ utils_os_file_archive_download_and_extract__temp_dir.path }}/{{ utils_os_file_archive_download_and_extract__file_name }}"
+              - "--strip-components=1"
+              - "-C"
+              - "{{ utils_os_file_archive_download_and_extract__dest }}"
 
     - name: Ensure file permissions of destination directory
       ansible.builtin.file:

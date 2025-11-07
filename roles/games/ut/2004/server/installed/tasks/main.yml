@@ -73,7 +73,7 @@
     backup: yes
   loop: "{{ games_ut_2004_server_installed__instances }}"
 
-- name: Create systemd service files for UT200 Server Instances
+- name: Create systemd service files for UT2004 Server Instances
   ansible.builtin.include_role:
     name: roles/utils/os/systemd/service/configured
   vars:

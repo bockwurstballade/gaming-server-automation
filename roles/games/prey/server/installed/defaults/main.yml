@@ -1,0 +1,58 @@
+# Users and Groups
+games_prey_server_installed__user: "{{ user | default('prey') }}" # must be same user as for CS 1.6 Server
+games_prey_server_installed__group: "{{ group | default('prey') }}"
+
+# Directories
+games_prey_server_installed__service_user_home: "{{ ('/', 'home', games_prey_server_installed__user) | ansible.builtin.path_join }}"
+games_prey_server_installed__service_user_home_steam: "{{ (games_prey_server_installed__service_user_home, '.steam') | ansible.builtin.path_join }}"
+games_prey_server_installed__service_user_home_sdk32: "{{ (games_prey_server_installed__service_user_home_steam, 'sdk32') | ansible.builtin.path_join }}"
+games_prey_server_installed__directory: "{{ dafrk__prey_server.directories.server.path | default('/games/prey/') }}"
+games_prey_server_installed__base: "{{ (games_prey_server_installed__directory, 'base') | ansible.builtin.path_join }}"
+
+games_prey_server_installed__cfg_dir: "{{ (games_prey_server_installed__tf_dir, 'cfg') | ansible.builtin.path_join }}"
+games_prey_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/usr/lib/x86_64-linux-gnu"
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_prey_server_installed__directory }}"
+ - "{{ games_prey_server_installed__base }}"
+ - "{{ (games_prey_server_installed__directory, 'bin') | ansible.builtin.path_join }}"
+ - "{{ games_prey_server_installed__service_user_home }}"
+ - "{{ (games_prey_server_installed__service_user_home, '.steam', 'sdk32') | ansible.builtin.path_join }}"
+games_prey_server_installed__ld_library_path_string: "{{ games_prey_server_installed__ld_library_path_dirs | unique | join(':') }}"
+games_prey_server_installed__service_directories:
+ - "{{ games_prey_server_installed__directory }}"
+ - "{{ games_prey_server_installed__service_user_home }}"
+
+
+
+## Archives
+games_prey_server_installed__server_archive_file_id: "{{ dafrk_prey_server.files.server_archive.file_id }}"
+games_prey_server_installed__server_archive_file_name: "{{ dafrk_prey_server.files.server_archive.file_name }}"
+games_prey_server_installed__server_archive_04_file_id: "{{ dafrk_prey_server.files.server_archive_04.file_id }}"
+games_prey_server_installed__server_archive_04_file_name: "{{ dafrk_prey_server.files.server_archive_04.file_name }}"
+games_prey_server_installed__cd_data_file_id: "{{ dafrk_prey_server.files.cd_data.file_id }}"
+games_prey_server_installed__cd_data_file_name: "{{ dafrk_prey_server.files.cd_data.file_name }}"
+games_prey_server_installed__cd_data_04_file_id: "{{ dafrk_prey_server.files.cd_data_04.file_id }}"
+games_prey_server_installed__cd_data_04_file_name: "{{ dafrk_prey_server.files.cd_data_04.file_name }}"
+games_prey_server_installed__archives:
+  - description: "Server Archive 1.00"
+    src: "{{ games_prey_server_installed__server_archive_file_id }}"
+    file_name: "{{ games_prey_server_installed__server_archive_file_name }}"
+    dest: "{{ games_prey_server_installed__directory }}"
+    strip_top: true
+  - description: "CD pk4 Data 1.00"
+    src: "{{ games_prey_server_installed__cd_data_file_id }}"
+    file_name: "{{ games_prey_server_installed__cd_data_file_name }}"
+    dest: "{{ games_prey_server_installed__base }}"
+    strip_top: false
+  - description: "Server Archive 1.4"
+    src: "{{ games_prey_server_installed__server_archive_04_file_id }}"
+    file_name: "{{ games_prey_server_installed__server_archive_04_file_name }}"
+    dest: "{{ games_prey_server_installed__directory }}"
+    strip_top: true
+
+## Instances
+games_prey_server_installed__instances: "{{ dafrk_prey_server_instances }}"

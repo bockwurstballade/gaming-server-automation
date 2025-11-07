@@ -1,0 +1,24 @@
+# This Playbook is used to install a Arma 3 Server
+# Test SSH connectivity before running the playbook:
+# cd ~/ansible
+# ansible -i inventory/inventory.yml -k -u root all -m ping
+# Enter SSH root password...
+# Execute the playbook:
+# cd ~/ansible
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass -e "steam_guard_code=123456" operations/games/arma/3/server/install.yml
+# if beginning of playbook takes too long for two factor auth, execute two factor part directly:
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass -e "steam_guard_code=123456" --tags steam_guard operations/games/arma/3/server/install.yml
+# and then skip two factor part:
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass -e "steam_guard_code=123456" --skip-tags steam_guard operations/games/arma/3/server/install.yml
+
+
+- hosts: all
+  vars_files:
+    - /home/dafrk/ansible/secrets/secrets.yml  # Explicitly include the vault file
+  vars:
+    ansible_become_pass: "{{ dafrk__local_password }}"
+    ansible_port: "{{ dafrk__os.ssh.port | default(27001) }}"
+    app_name: arma3_server
+    is_steam_game: true
+  roles:
+    - roles/games/arma/3/server/installed

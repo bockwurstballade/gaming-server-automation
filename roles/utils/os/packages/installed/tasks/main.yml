@@ -8,6 +8,16 @@
       changed_when: false
       check_mode: false # Always run this check, even in check mode
 
+    - name: Add non-free packages
+      ansible.builtin.command:
+        cmd: >-
+          apt-add-repository
+          non-free
+          -y
+      register: repoadd
+      changed_when: repoadd.changed
+      failed_when: repoadd.failed
+
     - name: Add i386 architecture if required by packages
       ansible.builtin.command: dpkg --add-architecture i386
       when:

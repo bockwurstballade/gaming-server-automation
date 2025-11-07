@@ -1,6 +1,7 @@
 utils_os_users_service_environment_variables_persisted__home: "{{ ('/', 'home', utils_os_users_service_environment_variables_persisted__user) | ansible.builtin.path_join }}"
 utils_os_users_service_environment_variables_persisted__ld_library_path_dirs:
  - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/usr/lib/x86_64-linux-gnu"
  - "/lib"
  - "/lib64"
  - "/usr/lib"

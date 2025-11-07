@@ -6,9 +6,11 @@ games_ut_2004_server_installed__service_user_home: "{{ ('/', 'home', games_ut_20
 games_ut_2004_server_installed__service_user_home_steam: "{{ (games_ut_2004_server_installed__service_user_home, '.steam') | ansible.builtin.path_join }}"
 games_ut_2004_server_installed__service_user_home_sdk32: "{{ (games_ut_2004_server_installed__service_user_home_steam, 'sdk32') | ansible.builtin.path_join }}"
 games_ut_2004_server_installed__directory: "{{ dafrk__ut_2004_server.directories.server.path | default('/games/ut2004/') }}"
-games_ut_2004_server_installed__tf_dir: "{{ (games_ut_2004_server_installed__directory, 'tf') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__ut_server: "{{ (games_ut_2004_server_installed__directory, 'ut-server') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__system: "{{ (games_ut_2004_server_installed__ut_server, 'System') | ansible.builtin.path_join }}"
+
 games_ut_2004_server_installed__cfg_dir: "{{ (games_ut_2004_server_installed__tf_dir, 'cfg') | ansible.builtin.path_join }}"
-games_ut_2004_server_installed__lib_subdir: "{{ (games_ut_2004_server_installed__directory, 'bin', 'linux64') | ansible.builtin.path_join }}"
+games_ut_2004_server_installed__lib_subdir: "{{ (games_ut_2004_server_installed__ut_server, 'System') | ansible.builtin.path_join }}"
 games_ut_2004_server_installed__ld_library_path_dirs:
  - "/lib/i386-linux-gnu" # must be first for 32 bit games
  - "/usr/lib/x86_64-linux-gnu"
@@ -16,6 +18,7 @@ games_ut_2004_server_installed__ld_library_path_dirs:
  - "/lib64"
  - "/usr/lib"
  - "{{ games_ut_2004_server_installed__directory }}"
+ - "{{ games_ut_2004_server_installed__ut_server }}"
  - "{{ games_ut_2004_server_installed__lib_subdir | default('') }}"
  - "{{ (games_ut_2004_server_installed__directory, 'bin') | ansible.builtin.path_join }}"
  - "{{ games_ut_2004_server_installed__service_user_home }}"
@@ -30,6 +33,20 @@ games_ut_2004_server_installed__libraries:
   - "lib32z1"
   - "lib32ncurses6"
   - "libstdc++5:i386"
+
+# deb packages:
+games_ut_2004_server_installed__deb_packages:
+  - file_name: "libstdc++5_3.3.6-20~lucid1_i386.deb"
+    src: "1P9pFBte_JBHAZAbwIeHsrukqLjLMQSmX"
+
+# Archives
+games_ut_2004_server_installed__server_archive_file_id: "{{ dafrk_ut_2004_server.files.server_archive.file_id }}"
+games_ut_2004_server_installed__server_archive_file_name: "{{ dafrk_ut_2004_server.files.server_archive.file_name }}"
+games_ut_2004_server_installed__archives:
+  - description: "Server Archive"
+    src: "{{ games_ut_2004_server_installed__server_archive_file_id }}"
+    file_name: "{{ games_ut_2004_server_installed__server_archive_file_name }}"
+    dest: "{{ games_ut_2004_server_installed__directory }}"
 
 # systemd
 games_ut_2004_server_installed__service_name: ut2004
@@ -47,3 +64,5 @@ games_ut_2004_server_installed__max_players: 24
 games_ut_2004_server_installed__client_port: 27005
 games_ut_2004_server_installed__port: 27090
 games_ut_2004_server_installed__ip: 152.53.231.31
+# Instances
+games_ut_2004_server_installed__instances: "{{ dafrk_ut_2004_server_instances }}"

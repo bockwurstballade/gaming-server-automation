@@ -4,6 +4,17 @@
   vars:
     utils_os_packages_installed__packages: "{{ games_ut_2004_server_installed__libraries }}"
 
+- name: Ensure required deb Packages are installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/packages/deb/installed
+  vars:
+    utils_os_packages_deb_installed__src: "{{ item.src }}"
+    utils_os_packages_deb_installed__file_name: "{{ item.file_name }}"
+    utils_os_packages_deb_installed__user: "{{ games_ut_2004_server_installed__user }}"
+    utils_os_packages_deb_installed__group: "{{ games_ut_2004_server_installed__group }}"
+  loop:
+    "{{ games_ut_2004_server_installed__deb_packages }}"
+
 - name: Ensure Existence of Service User
   ansible.builtin.include_role:
     name: roles/utils/os/users/service/created
@@ -18,3 +29,86 @@
     utils_os_users_service_directory_permissions_granted__user: "{{ games_ut_2004_server_installed__user }}"
     utils_os_users_service_directory_permissions_granted__group: "{{ games_ut_2004_server_installed__group }}"
     utils_os_users_service_directory_permissions_granted__directories: "{{ games_ut_2004_server_installed__service_directories }}"
+
+- name: Ensure Environment Variables are properly set
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/environment/variables/persisted
+  vars:
+    - utils_os_users_service_environment_variables_persisted__user: "{{ games_ut_2004_server_installed__user }}"
+    - utils_os_users_service_environment_variables_persisted__group: "{{ games_ut_2004_server_installed__group }}"
+    - utils_os_users_service_environment_variables_persisted__service_dir: "{{ games_ut_2004_server_installed__directory }}"
+
+- name: Ensure expected archives are extracted
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/archive/download_and_extract
+  vars:
+    utils_os_file_archive_download_and_extract__user: "{{ games_ut_2004_server_installed__user }}"
+    utils_os_file_archive_download_and_extract__group: "{{ games_ut_2004_server_installed__group }}"
+    utils_os_file_archive_download_and_extract__src: "{{ item.src }}"
+    utils_os_file_archive_download_and_extract__file_name: "{{ item.file_name }}"
+    utils_os_file_archive_download_and_extract__dest: "{{ item.dest }}"
+  loop: "{{ games_ut_2004_server_installed__archives }}"
+
+- name: Enforce individual Instance ini Templates
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: templates/games/ut2004/ut-server/System/UT2004.ini.j2
+    dest: "{{ (games_ut_2004_server_installed__system, item.cfg) | ansible.builtin.path_join }}"
+    owner: "{{ games_ut_2004_server_installed__user }}"
+    group: "{{ games_ut_2004_server_installed__group }}"
+    mode: '0644'
+    backup: yes
+  loop: "{{ games_ut_2004_server_installed__instances }}"
+
+- name: Enforce individual XAdmin.ini
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: templates/games/ut2004/ut-server/System/XAdmin.ini.j2
+    dest: "{{ (games_ut_2004_server_installed__system, item.xadmin) | ansible.builtin.path_join }}"
+    owner: "{{ games_ut_2004_server_installed__user }}"
+    group: "{{ games_ut_2004_server_installed__group }}"
+    mode: '0644'
+    backup: yes
+  loop: "{{ games_ut_2004_server_installed__instances }}"
+
+# - name: Create systemd service file for UT2004 Server instances
+#   become: true
+#   become_user: root
+#   ansible.builtin.copy:
+#     dest: /etc/systemd/system/{{ item.systemd_name }}.service
+#     content: |
+#       [Unit]
+#       Description={{ item.systemd_description }}
+#       After=network.target
+
+#       [Service]
+#       User={{ games_ut_2004_server_installed__user }}
+#       Group={{ games_ut_2004_server_installed__group }}
+#       WorkingDirectory={{ games_ut_2004_server_installed__directory }}
+#       Environment="LD_LIBRARY_PATH={{ games_ut_2004_server_installed__ld_library_path_string }}"
+#       ExecStart={{ item.execstart }}
+#       Type=simple
+#       KillMode=process
+
+#       [Install]
+#       WantedBy=multi-user.target
+#     owner: root
+#     group: root
+#     mode: '0644'
+#   loop: "{{ games_ut_2004_server_installed__instances }}"
+
+- name: Create systemd service files for UT200 Server Instances
+  ansible.builtin.include_role:
+    name: roles/utils/os/systemd/service/configured
+  vars:
+    utils_os_systemd_service_configured__service_name: "{{ item.systemd_name }}"
+    utils_os_systemd_service_configured__service_description: "{{ item.systemd_description }}"
+    utils_os_systemd_service_configured__user: "{{ games_ut_2004_server_installed__user }}"
+    utils_os_systemd_service_configured__group: "{{ games_ut_2004_server_installed__group }}"
+    utils_os_systemd_service_configured__ld_library_path_string: "{{ games_ut_2004_server_installed__ld_library_path_string }}"
+    utils_os_systemd_service_configured__execstart: "{{ item.execstart }}"
+    utils_os_systemd_service_configured__working_directory: "{{ games_ut_2004_server_installed__lib_subdir }}"
+  loop: "{{ games_ut_2004_server_installed__instances }}"
+

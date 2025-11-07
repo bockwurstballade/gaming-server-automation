@@ -1,0 +1,41 @@
+- name: Ensure presence of temporary download directory (if temp mode)
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: "_download"
+  register: utils_os_packages_deb_installed__temp_dir
+
+- name: Ensure .deb file is downloaded to temporary directory
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/download
+  vars:
+    utils_os_software_download__src: "{{ utils_os_packages_deb_installed__src }}"
+    utils_os_software_download__dest: "{{ utils_os_packages_deb_installed__temp_dir }}"
+    utils_os_software_download__file_name: "{{ utils_os_packages_deb_installed__file_name }}"
+    utils_os_software_download__user: "{{ utils_os_packages_deb_installed__user }}"
+    utils_os_software_download__group: "{{ utils_os_packages_deb_installed__group }}"
+    utils_os_software_download__dl_dir: "{{ utils_os_packages_deb_installed__temp_dir }}"
+
+- name: Ensure .deb file is installed
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: >-
+      dpkg
+      -i
+      {{ (utils_os_packages_deb_installed__temp_dir.path, utils_os_packages_deb_installed__file_name) | ansible.builtin.path_join }}
+  register: deb_install
+  changed_when: deb_install.changed
+  failed_when: deb_install.failed
+
+- name: Ensure dependencies are fixed
+  become: true
+  become_user: root
+  ansible.builtin.command:
+    cmd: >-
+      sudo
+      apt
+      --fix-broken
+      install
+  register: apt_fix
+  changed_when: apt_fix.changed
+  failed_when: apt_fix.failed

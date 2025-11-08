@@ -1,0 +1,45 @@
+games_battlefield_vietnam_server_installed__group: bfv
+games_battlefield_vietnam_server_installed__user: bfv
+
+# Directories
+games_battlefield_vietnam_server_installed__service_user_home: "{{ ('/', 'home', games_battlefield_vietnam_server_installed__user) | ansible.builtin.path_join }}"
+games_battlefield_vietnam_server_installed__directory: "{{ dafrk__battlefield_vietnam_server.directories.server.path | default('/games/bfv/') }}"
+games_battlefield_vietnam_server_installed__service_directories:
+ - "{{ games_battlefield_vietnam_server_installed__directory }}"
+ - "{{ games_battlefield_vietnam_server_installed__service_user_home }}"
+games_battlefield_vietnam_server_installed__settings: "{{ (games_battlefield_vietnam_server_installed__directory, 'mods', 'bfvietnam', 'settings') | ansible.builtin.path_join }}"
+
+# Libraries
+games_battlefield_vietnam_server_installed__libraries:
+  - "gcc-multilib"
+  - "bzip22
+  - "libc6:i386"
+  - "libncurses6:i386"
+  - "libstdc++5:i386"
+
+games_battlefield_vietnam_server_installed__server_archive_file_id: "{{ dafrk_bfv_server.files.server_archive.file_id }}"
+games_battlefield_vietnam_server_installed__server_archive_file_name: "{{ dafrk_bfv_server.files.server_archive.file_name }}"
+games_battlefield_vietnam_server_installed__archives:
+  - description: "Server Archive"
+    src: "{{ games_battlefield_vietnam_server_installed__server_archive_file_id }}"
+    file_name: "{{ games_battlefield_vietnam_server_installed__server_archive_file_name }}"
+    dest: "{{ games_battlefield_vietnam_server_installed__directory }}"
+    strip_top: false
+
+# Links
+games_battlefield_vietnam_server_installed__symlinks:
+  - orig: "{{ (games_battlefield_vietnam_server_installed__directory, 'bfv_linded.dynamic') | ansible.builtin.path_join }}"
+    link: "{{ (games_battlefield_vietnam_server_installed__directory, 'bfv_linded') | ansible.builtin.path_join }}"
+
+games_battlefield_vietnam_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/usr/lib/x86_64-linux-gnu"
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_battlefield_vietnam_server_installed__directory }}"
+ - "{{ games_battlefield_vietnam_server_installed__service_user_home }}"
+games_battlefield_vietnam_server_installed__ld_library_path_string: "{{ games_battlefield_vietnam_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
+# Server Instances
+games_battlefield_vietnam_server_installed__instances: "{{ dafrk_bfv_server_instances }}"

@@ -2,3 +2,4 @@ utils_os_file_archive_download_and_extract__user: root
 utils_os_file_archive_download_and_extract__group: users
 utils_os_file_archive_download_and_extract__mode: '0755'
 roles_utils_os_file_archive_download_and_extract__temp_mode: true
+utils_os_file_archive_download_and_extract__strip_top_level: false

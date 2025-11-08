@@ -3,6 +3,7 @@
   become_user: root
   block:
     - name: "Create systemd service file for {{ utils_os_systemd_service_configured__service_name }}"
+      when: not utils_os_systemd_service_configured__pseudo_tty
       become: true
       become_user: root
       ansible.builtin.copy:
@@ -27,6 +28,39 @@
         owner: root
         group: root
         mode: '0644'
+  
+    - name: "Create systemd service with pseudo TTY file for {{ utils_os_systemd_service_configured__service_name }}"
+      when: utils_os_systemd_service_configured__pseudo_tty
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        dest: "/etc/systemd/system/{{ utils_os_systemd_service_configured__service_name }}.service"
+        content: |
+          [Unit]
+          Description={{ utils_os_systemd_service_configured__service_description }}
+          After=network.target
+
+          [Service]
+          User={{ utils_os_systemd_service_configured__user }}
+          Group={{ utils_os_systemd_service_configured__group }}
+          Environment="TERM=xterm"
+          StandardInput=null
+          StandardOutput=journal
+          StandardError=journal
+          TTYVirtual=yes
+          TTYPath=/dev/tty
+          WorkingDirectory={{ utils_os_systemd_service_configured__working_directory }}
+          Environment="LD_LIBRARY_PATH={{ utils_os_systemd_service_configured__ld_library_path_string }}"
+          ExecStart={{ utils_os_systemd_service_configured__execstart }}
+          Restart=on-failure
+          Type=simple
+          KillMode=process
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'
 
     - name: "Enable {{ utils_os_systemd_service_configured__service_name }} service"
       systemd:
@@ -36,3 +70,4 @@
     - name: Reload systemd daemon
       systemd:
         daemon_reload: yes
+

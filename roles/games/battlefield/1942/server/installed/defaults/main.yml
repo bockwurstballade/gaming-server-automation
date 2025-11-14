@@ -18,6 +18,16 @@ games_battlefield_1942_server_installed__service_directories:
  - "{{ games_battlefield_1942_server_installed__settings }}"
 games_battlefield_1942_server_installed__settings: "{{ (games_battlefield_1942_server_installed__directory, 'mods', 'bf1942', 'settings') | ansible.builtin.path_join }}"
 
+games_battlefield_1942_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/usr/lib/x86_64-linux-gnu"
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_battlefield_1942_server_installed__directory }}"
+ - "{{ games_battlefield_1942_server_installed__service_user_home }}"
+games_battlefield_1942_server_installed__ld_library_path_string: "{{ games_battlefield_1942_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
 # Archives
 games_battlefield_1942_server_installed__server_archive_file_id: "{{ dafrk_bf1942_server.files.server_archive.file_id }}"
 games_battlefield_1942_server_installed__server_archive_file_name: "{{ dafrk_bf1942_server.files.server_archive.file_name }}"

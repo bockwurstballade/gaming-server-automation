@@ -4,7 +4,6 @@
   vars:
     utils_os_packages_installed__packages: "{{ games_battlefield_vietnam_server_installed__libraries }}"
 
-
 - name: Ensure Existence of Service User
   ansible.builtin.include_role:
     name: roles/utils/os/users/service/created

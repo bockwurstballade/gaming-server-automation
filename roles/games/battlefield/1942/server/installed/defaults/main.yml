@@ -1,0 +1,44 @@
+games_battlefield_1942_server_installed__group: bf1942
+games_battlefield_1942_server_installed__user: bf1942
+
+# Libraries
+games_battlefield_1942_server_installed__libraries:
+  - "gcc-multilib"
+  - "bzip2"
+  - "libc6:i386"
+  - "libncurses6:i386"
+  - "libstdc++5:i386"
+
+# Directories
+games_battlefield_1942_server_installed__service_user_home: "{{ ('/', 'home', games_battlefield_1942_server_installed__user) | ansible.builtin.path_join }}"
+games_battlefield_1942_server_installed__directory: "{{ dafrk__battlefield_vietnam_server.directories.server.path | default('/games/bf1942/') }}"
+games_battlefield_1942_server_installed__service_directories:
+ - "{{ games_battlefield_1942_server_installed__directory }}"
+ - "{{ games_battlefield_1942_server_installed__service_user_home }}"
+ - "{{ games_battlefield_1942_server_installed__settings }}"
+games_battlefield_1942_server_installed__settings: "{{ (games_battlefield_1942_server_installed__directory, 'mods', 'bf1942', 'settings') | ansible.builtin.path_join }}"
+
+# Archives
+games_battlefield_1942_server_installed__server_archive_file_id: "{{ dafrk_bf1942_server.files.server_archive.file_id }}"
+games_battlefield_1942_server_installed__server_archive_file_name: "{{ dafrk_bf1942_server.files.server_archive.file_name }}"
+games_battlefield_1942_server_installed__server_archive_base_file_id: "{{ dafrk_bf1942_server.files.server_archive_base.file_id }}"
+games_battlefield_1942_server_installed__server_archive_base_file_name: "{{ dafrk_bf1942_server.files.server_archive_base.file_name }}"
+games_battlefield_1942_server_installed__archives:
+  - description: "Server Archive 1.6"
+    src: "{{ games_battlefield_1942_server_installed__server_archive_base_file_id }}"
+    file_name: "{{ games_battlefield_1942_server_installed__server_archive_base_file_name }}"
+    dest: "{{ games_battlefield_1942_server_installed__directory }}"
+    strip_top: false
+  - description: "Server Archive 1.61b"
+    src: "{{ games_battlefield_1942_server_installed__server_archive_file_id }}"
+    file_name: "{{ games_battlefield_1942_server_installed__server_archive_file_name }}"
+    dest: "{{ games_battlefield_1942_server_installed__directory }}"
+    strip_top: true
+
+# Links
+games_battlefield_1942_server_installed__symlinks:
+  - orig: "{{ (games_battlefield_1942_server_installed__directory, 'bf1942_lnxded.dynamic') | ansible.builtin.path_join }}"
+    link: "{{ (games_battlefield_1942_server_installed__directory, 'bf1942_lnxded') | ansible.builtin.path_join }}"
+
+# Server Instances
+games_battlefield_1942_server_installed__instances: "{{ dafrk_bf1942_server_instances }}"

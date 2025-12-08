@@ -1,0 +1,85 @@
+# User and Groups
+games_cod_5_server_installed__group_name: cod5
+games_cod_5_server_installed__user_name: cod5
+
+# systemd
+games_cod_5_server_installed__service_name: cod5
+games_cod_5_server_installed__service_description: "COD 5 Server"
+
+## Software
+games_cod_5_server_installed__software:
+ - unzip
+
+games_cod_5_server_installed__libraries:
+  - "libc6:i386"
+  - "libstdc++6:i386"
+
+games_cod_5_server_installed__public_ip: "152.53.231.31"
+
+# Environment Variables
+games_cod_5_server_installed__ld_library_path_dirs:
+ - "/lib/i386-linux-gnu" # must be first for 32 bit games
+ - "/lib"
+ - "/lib64"
+ - "/usr/lib"
+ - "{{ games_cod_5_server_installed__directory }}"
+ - "{{ games_cod_5_server_installed__server_main | default('') }}"
+ - "{{ games_cod_5_server_installed__home_directory }}"
+games_cod_5_server_installed__ld_library_path_string: "{{ games_cod_5_server_installed__ld_library_path_dirs | unique | join(':') }}"
+
+
+# Directories
+games_cod_5_server_installed__directory: "{{ dafrk__cod_5_server.directories.cod_server.path | default('/games/cod5/') }}"
+games_cod_5_server_installed__home_directory: "{{ dafrk__cod_5_server.directories.cod_home.path | default('/home/cod5/') }}"
+games_cod_5_server_installed__server_main: "{{ (games_cod_5_server_installed__directory, 'main') | ansible.builtin.path_join }}"
+games_cod_5_server_installed__service_directories:
+ - "{{ games_cod_5_server_installed__directory }}"
+ - "{{ games_cod_5_server_installed__home_directory }}"
+ - "{{ [games_cod_5_server_installed__home_directory, 'main'] | ansible.builtin.path_join }}"
+
+# Instances
+games_cod_5_server_installed__instances: "{{ dafrk_cod_5_server_instances }}"
+
+
+# Files
+
+## GCC Libraries
+games_cod_5_server_installed__lib_dir: "{{  dafrk__os.directories.lib_dir.path | default('/tmp/') }}"
+
+games_cod_5_server_installed__setup_data_file_id: "{{ dafrk__cod_5_server.files.setup_data.file_id }}"
+games_cod_5_server_installed__setup_data_file_name: "{{ dafrk__cod_5_server.files.setup_data.file_name }}"
+
+games_cod_5_server_installed__server_base_file_id: "{{ dafrk__cod_5_server.files.server_base.file_id }}"
+games_cod_5_server_installed__server_base_file_name: "{{ dafrk__cod_5_server.files.server_base.file_name }}"
+## Templates
+games_cod_5_server_installed__templates:
+  - description: "automatically loaded default config"
+    directory: "{{ games_cod_5_server_installed__directory }}/main/"
+    file_name: "autoexec.cfg"
+  - description: "automatically loaded mp default config"
+    directory: "{{ games_cod_5_server_installed__directory }}/main/"
+    file_name: "autoexec_mp.cfg"
+  - description: "Main server config"
+    directory: "{{ games_cod_5_server_installed__directory }}/main/"
+    file_name: "server.cfg"
+## Archives
+games_cod_5_server_installed__archives:
+  - description: "CoD5 CD Setup Data"
+    src: "{{ games_cod_5_server_installed__setup_data_file_id }}"
+    file_name: "{{ games_cod_5_server_installed__setup_data_file_name }}"
+    dest: "{{ games_cod_5_server_installed__directory }}"
+    strip_top: false
+  - description: "CoD 5 1.7 Linux Server Base"
+    src: "{{ games_cod_5_server_installed__server_base_file_id }}"
+    file_name: "{{ games_cod_5_server_installed__server_base_file_name }}"
+    dest: "{{ games_cod_5_server_installed__directory }}"
+    strip_top: true
+
+# Server settings:
+games_cod_5_server_installed__port: 28980
+games_cod_5_server_installed__sv_hostname: "Baereneule COD UO"
+games_cod1_server_installed__admin: Baereneule
+games_cod_5_server_installed__motd: "Sons of Lanarchy"
+games_cod_5_server_installed__rcon_password: "{{ rcon_password }}"
+games_cod_5_server_installed__server_password: "{{ server_password }}"
+games_cod_5_server_installed__server_max_players: 32

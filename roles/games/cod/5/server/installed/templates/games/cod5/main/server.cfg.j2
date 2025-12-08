@@ -1,0 +1,367 @@
+seta sv_punkbuster 
+wait
+pb_sv_disable
+
+
+////////////////////////////////////
+// Server Information
+//
+// Server Browser Name
+set sv_hostname "{{ item.hostname }}" //This is the name that appears in the server browser
+
+// "Message of the Day" -- Not sure if this even works
+set g_motd "{{ item.motd }}"
+
+// Keywords (maybe a server search function?)
+set sv_keywords ""
+
+
+
+
+////////////////////////////////////
+// Passwords
+//
+// Server password (needed to get into the server)
+set g_password "{{ item.password }}" // blank means NO password
+
+// Private Client Slot Password
+set sv_privatePassword ""
+
+// Rconpassword
+set rcon_password "{{ item.rcon_password }}" // Change this to your rcon password!
+
+// Network options
+
+set net_ip "{{ item.ip }}"									// Set your servers IP address
+set net_port "{{ item.port }}"		
+
+////////////////////////////////////
+// Client Issues
+//
+// Maximum Clients
+set sv_maxclients "{{ item.max_players }}"
+set sv_privateclients ""  // These people can use the private password to get in the server
+
+// Client's Min/Maximum Ping
+set sv_minPing "0"
+set sv_maxping "155"
+
+// Client's Maximum Rate
+set sv_maxRate "25000"
+
+// Client Voting
+set g_allowVote "0"
+set g_voteAbstainWeight "0.5"
+
+// Client Side Stuff  -- Don't know what these do right now
+set sv_clientside "0"
+set sv_clientArchive "1"
+set sv_clientSideBullets "1"
+set sv_clientSideVehicles "1"
+set g_client_side_lights "1"
+
+// sv_pure - Keeps clients from loading files NOT on the server
+set sv_pure "1"
+
+// Disable Client access to console?
+set sv_disableClientConsole "0"
+
+
+////////////////////////////////////
+// Server Personality Settings
+//
+// Automatic Team Balance
+set scr_teambalance "0"
+
+// In-Game Voice Chat
+set sv_voice "0"
+set voice_global "0"
+set g_voiceChatTalkingDuration "500"
+set voice_deadChat "0"
+set sv_voiceQuality "3"
+set voice_localEcho "0"
+
+// Dead players chat with the living?
+set g_deadChat "0"
+
+// Who dead people can spectate
+set scr_game_spectatetype "1"
+
+// Enable/Disable Killcam
+set scr_game_allowkillcam "1"
+
+// Gravity
+set g_gravity "800"
+
+// Base Move Speed
+set g_speed "190"
+
+// Number of dropped weapons before recycling
+set g_maxDroppedWeapons "16"
+
+
+////////////////////////////////////
+// Server General Gameplay Settings
+//
+// Hardcore
+set scr_hardcore "0"
+
+// OldSchool
+set scr_oldschool "0"
+
+// Friendly Fire?
+set scr_team_fftype "0"
+
+// Red Crosshairs while over enemy? Maybe?
+set g_redCrosshairs "1"
+
+// Draw Friends
+set scr_drawfriend "0"
+
+// Revive players?  Don't know what this does
+set scr_player_allowrevive "1"
+set g_revive "0"
+set revive_time_taken "2"
+
+// Announcer
+set scr_allowannouncer "1"
+
+
+////////////////////////////////////
+// Player Settings
+//
+// Health Issues
+set scr_player_healthregentime "5"
+set scr_player_maxhealth "100"
+
+// Number of lives
+set scr_player_numlives "0"
+
+// Respawn Settings
+set scr_player_forcerespawn "1"
+set scr_player_respawndelay "0"
+set scr_player_suicidespawndelay "0"
+
+// Sprint Settings
+set scr_player_sprinttime "4"
+
+// Suicide point loss
+set scr_game_suicidepointloss "0"
+
+
+
+////////////////////////////////////
+// Server Timers
+set scr_game_graceperiod "15"
+set scr_intermission_time "30"
+set scr_team_respawntime "0"
+
+
+
+////////////////////////////////////
+// Server Performance Issues
+//
+// Rate
+set rate "25000"
+
+// Antilag
+set g_antilag "1"
+
+// Smooth clients
+set g_smoothClients "1"
+
+// FPS (Server Frames per Second) -- I would leave this alone for now.  MIGHT mess up gameplay if changed.
+set sv_fps "20"
+
+////////////////////////////////////
+// Server Download/Redirect Settings
+//
+set sv_allowDownload "1"
+set sv_wwwBaseURL ""
+set sv_wwwDlDisconnected "0"
+set sv_wwwDownload "0"
+
+
+////////////////////////////////////
+// Server Management/Admin
+//
+// Logging
+set g_log "games_mp.log"
+set g_logSync "1"
+set logfile "2"
+
+// Client IP Banning (yucky way to do this)
+set g_banIPs ""
+
+// Kick Ban Time
+set sv_kickBanTime "300"
+
+// TKers
+set scr_teamKillPunishCount "3"
+set scr_team_artilleryTeamKillPenalty "0.25"
+set scr_team_kickteamkillers "0"
+set set scr_team_teamkillerplaylistbanpenalty "0"
+set scr_team_teamkillerplaylistbanquantum "0"
+set scr_team_teamkillpointloss "1"
+set scr_team_teamkillspawndelay "20"
+
+
+////////////////////////////////////
+// Battle Chatter Settings
+set scr_allowbattlechatter "1"
+set bcmp_incoming_grenade_probability "50"
+set bcmp_kill_inform_probability "50"
+set bcmp_killstreak_incoming_probability "50"
+set bcmp_perk_call_probability "50"
+set bcmp_sniper_kill_probability "25"
+set bcmp_toss_grenade_probability "50"
+set bcmp_weapon_delay "2000"
+set bcmp_weapon_fire_probability "90"
+
+////////////////////////////////////
+// Fire
+set fire_audio_random_max_duration "1000"
+set fire_audio_repeat_duration "1500"
+set fire_spread_probability "0"
+set fire_stage1_burn_time "3000"
+set fire_stage2_burn_time "0"
+set fire_stage3_burn_time "0"
+set fire_world_damage "20"
+set fire_world_damage_duration "8"
+set fire_world_damage_rate "0.25"
+
+////////////////////////////////////
+// Flares
+set flare_distance_scale "16"
+set flare_duration "8"
+set flare_effect_radius "400"
+set flareBurnOutFadeWait "0.65"
+set flareDisableEffects "0"
+set flareLookAwayFadeWait "0.45"
+
+
+// Map_rotation  (available gametypes: dm, tdm, dom, sab, sd ctf, koth, twar)
+set sv_mapRotation "{{ item.maps }}"
+ 
+set sv_maprotationcurrent "{{ item.start_map }}"
+Extra Config File, Gametypes
+For Gametypes create another file gametypes.cfg and copy/paste the following then adjust your settings:
+////////////////////////////////////
+// Gametype Settings
+//
+// KOTH
+set scr_koth_globalbattlechatterprobability "0"
+set scr_koth_numlives "0"
+set scr_koth_playerrespawndelay "0"
+set scr_koth_roundlimit "1"
+set scr_koth_roundswitch "1"
+set scr_koth_scorelimit "250"
+set scr_koth_timelimit "15"
+set scr_koth_waverespawndelay "0"
+// More setting that I am not sure work (because they are not named like normal)
+set koth_autodestroytime "60"
+set koth_capturetime "20"
+set koth_delayPlayer "0"
+set koth_destroytime "10"
+set koth_kothmode "0"
+set koth_spawnDelay "30"
+set koth_spawntime "0"
+
+
+// CTF
+set scr_ctf_enemycarriervisible "0"
+set scr_ctf_flagrespawntime "0"
+set scr_ctf_globalbattlechatterprobability "0"
+set scr_ctf_idleflagreturntime "30"
+set scr_ctf_numlives "0"
+set scr_ctf_playerrespawndelay "0"
+set scr_ctf_roundlimit "2"
+set scr_ctf_roundswitch "1"
+set scr_ctf_scorelimit "3"
+set scr_ctf_timelimit "5"
+set scr_ctf_touchreturn "1"
+set scr_ctf_waverespawndelay "15"
+
+// DM
+set scr_dm_globalbattlechatterprobability "100"
+set scr_dm_numlives "0"
+set scr_dm_playerrespawndelay "0"
+set scr_dm_roundlimit "1"
+set scr_dm_scorelimit "150"
+set scr_dm_timelimit "10"
+set scr_dm_waverespawndelay "0"
+
+// DOM
+set scr_dom_globalbattlechatterprobability "0"
+set scr_dom_numlives "0"
+set scr_dom_playerrespawndelay "0"
+set scr_dom_roundlimit "1"
+set scr_dom_scorelimit "200"
+set scr_dom_timelimit "0"
+set scr_dom_waverespawndelay "0"
+
+// TWAR
+set scr_twar_globalbattlechatterprobability "0"
+set scr_twar_numlives "0"
+set scr_twar_roundlimit "2"
+set scr_twar_roundswitch "1"
+set scr_twar_scorelimit "5"
+set scr_twar_timelimit "10"
+set twar_captureAccelBonus "35"
+set twar_captureAccelLimit "50"
+set twar_captureTime "40"
+set twar_finalFightFlagRespawnPenalty "3"
+set twar_finalFightTimeLimit "5"
+set twar_momentumArtillery "10"
+set twar_momentumBlitzkriegTime "30"
+set twar_momentumDogs "10"
+set twar_momentumEnabled "1"
+set twar_momentumFlagCap "25"
+set twar_momentumKamikaze "10"
+set twar_momentumKillPlayer "5"
+set twar_momentumMax "70"
+set twar_momentumMaxMultiplier "3"
+set twar_momentumMultiplierBonus "25"
+set twar_momentumMultiplierBonusLimit "75"
+set twar_momentumRadar "10"
+set twar_neutralFlagLockTime "0"
+set twar_secondaryInfluencerBonus "0.5"
+set twar_showEnemyCount "1"
+set twar_spawnPointFacingAngle "60"
+
+// TDM
+set scr_tdm_globalbattlechatterprobability "0"
+set scr_tdm_numlives "0"
+set scr_tdm_playerrespawndelay "0"
+set scr_tdm_roundlimit "1"
+set scr_tdm_scorelimit "750"
+set scr_tdm_timelimit "10"
+set scr_tdm_waverespawndelay "0"
+
+// SD
+set scr_sd_bombtimer "45"
+set scr_sd_defusetime "5"
+set scr_sd_globalbattlechatterprobability "0"
+set scr_sd_multibomb "0"
+set scr_sd_numlives "1"
+set scr_sd_planttime "5"
+set scr_sd_playerrespawndelay "0"
+set scr_sd_roundlimit "0"
+set scr_sd_roundswitch "3"
+set scr_sd_scorelimit "4"
+set scr_sd_timelimit "2.5"
+set scr_sd_waverespawndelay "0"
+
+// SAB
+set scr_sab_bombtimer "30"
+set scr_sab_defusetime "5"
+set scr_sab_globalbattlechatterprobability "0"
+set scr_sab_hotpotato "0"
+set scr_sab_numlives "0"
+set scr_sab_planttime "2.5"
+set scr_sab_playerrespawndelay "7.5"
+set scr_sab_roundlimit "0"
+set scr_sab_roundswitch "1"
+set scr_sab_scorelimit "1"
+set scr_sab_timelimit "20"
+set scr_sab_waverespawndelay "0"

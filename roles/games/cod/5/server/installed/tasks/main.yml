@@ -1,0 +1,93 @@
+- name: Ensure Potentially pre-existing service is stopped
+  ansible.builtin.include_role:
+    name: roles/utils/os/systemd/service/stopped
+  vars:
+    utils_os_systemd_service_stopped__service_name: "{{ games_cod_5_server_installed__service_name }}"
+
+- name: Ensure required software is installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/software/installed
+  vars:
+    utils_os_software_installed__name: "{{ item }}"
+  loop: "{{ games_cod_5_server_installed__software }}"
+
+- name: Ensure required libraries are installed
+  ansible.builtin.include_role:
+    name: roles/utils/os/packages/installed
+  vars:
+    utils_os_packages_installed__packages: "{{ games_cod_5_server_installed__libraries }}"
+
+- name: Ensure Existence of Service User
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/created
+  vars:
+    - utils_os_users_service_created__group: "{{ games_cod_5_server_installed__group_name }}"
+    - utils_os_users_service_created__user: "{{ games_cod_5_server_installed__user_name }}"
+
+- name: Ensure permissions on target directories
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/directory/permissions/granted
+  vars:
+    utils_os_users_service_directory_permissions_granted__user: "{{ games_cod_5_server_installed__user_name }}"
+    utils_os_users_service_directory_permissions_granted__group: "{{ games_cod_5_server_installed__group_name }}"
+    utils_os_users_service_directory_permissions_granted__directories: "{{ games_cod_5_server_installed__service_directories }}"
+
+- name: Ensure Environment Variables are properly set
+  ansible.builtin.include_role:
+    name: roles/utils/os/users/service/environment/variables/persisted
+  vars:
+    - utils_os_users_service_environment_variables_persisted__user: "{{ games_cod_5_server_installed__user_name }}"
+    - utils_os_users_service_environment_variables_persisted__group: "{{ games_cod_5_server_installed__group_name }}"
+    - utils_os_users_service_environment_variables_persisted__service_dir: "{{ games_cod_5_server_installed__directory }}"
+
+- name: Ensure expected archives are extracted
+  ansible.builtin.include_role:
+    name: roles/utils/os/file/archive/download_and_extract
+  vars:
+    utils_os_file_archive_download_and_extract__user: "{{ games_cod_5_server_installed__user_name }}"
+    utils_os_file_archive_download_and_extract__group: "{{ games_cod_5_server_installed__group_name }}"
+    utils_os_file_archive_download_and_extract__src: "{{ item.src }}"
+    utils_os_file_archive_download_and_extract__file_name: "{{ item.file_name }}"
+    utils_os_file_archive_download_and_extract__dest: "{{ item.dest }}"
+    utils_os_file_archive_download_and_extract__strip_top_level: "{{ item.strip_top }}"
+  loop: "{{ games_cod_5_server_installed__archives }}"
+
+- name: Enforce individual Instance cfg Templates
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: templates/games/cod5/main/server.cfg.j2
+    dest: "{{ (games_cod_5_server_installed__server_main, item.cfg) | ansible.builtin.path_join }}"
+    owner: "{{ games_cod_5_server_installed__user_name }}"
+    group: "{{ games_cod_5_server_installed__group_name }}"
+    mode: '0644'
+    backup: yes
+  loop: "{{ games_cod_5_server_installed__instances }}"
+  tags: [templates]
+
+- name: Create systemd service file for CoD5 instances
+  become: true
+  become_user: root
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/{{ item.systemd_name }}.service
+    content: |
+      [Unit]
+      Description={{ item.systemd_description }}
+      After=network.target
+
+      [Service]
+      User={{ games_cod_5_server_installed__user_name }}
+      Group={{ games_cod_5_server_installed__group_name }}
+      WorkingDirectory={{ games_cod_5_server_installed__directory }}
+      Environment="LD_LIBRARY_PATH={{ games_cod_5_server_installed__ld_library_path_string }}"
+      ExecStart={{ games_cod_5_server_installed__directory }}/codwaw_lnxded +set dedicated {{ item.dedicated }} +set net_port {{ item.port }} +set loc_language 2 +set sv_punkbuster 0 +set fs_basepath {{ games_cod_5_server_installed__directory }} +map_rotate +exec {{ item.cfg }} +set ttycon 0
+      Type=simple
+      KillMode=process
+
+      [Install]
+      WantedBy=multi-user.target
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ games_cod_5_server_installed__instances }}"
+  tags: [systemd]

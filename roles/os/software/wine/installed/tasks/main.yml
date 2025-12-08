@@ -1,0 +1,60 @@
+- name: Perform as root
+  become: true
+  become_user: root
+  block:
+    - name: Check current foreign architectures
+      ansible.builtin.command: dpkg --print-foreign-architectures
+      register: foreign_arch
+      changed_when: false
+
+    - name: Enable 32-bit architecture (i386)
+      ansible.builtin.command: dpkg --add-architecture i386
+      when: "'i386' not in foreign_arch.stdout"
+      register: add_arch
+
+    - name: Update apt cache if architecture was changed
+      ansible.builtin.apt:
+        update_cache: true
+      when: add_arch.changed
+
+    - name: Install required dependencies for key management
+      ansible.builtin.apt:
+        name:
+          - software-properties-common
+          - gnupg2
+          - wget
+        state: present
+
+    - name: Create directory for apt keyrings
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download WineHQ GPG key
+      ansible.builtin.get_url:
+        url: https://dl.winehq.org/wine-builds/winehq.key
+        dest: /etc/apt/keyrings/winehq-archive.key
+        mode: '0644'
+
+    - name: Add WineHQ repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64,i386 signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/debian/ {{ debian_codename }} main"
+        filename: winehq
+        state: present
+
+    - name: Install Wine
+      ansible.builtin.apt:
+        name: "{{ wine_package }}"
+        state: present
+        update_cache: true
+        install_recommends: true
+
+    - name: Verify Wine installation
+      ansible.builtin.command: wine --version
+      register: wine_version
+      changed_when: false
+
+    - name: Display Wine version
+      ansible.builtin.debug:
+        msg: "Installed Wine Version: {{ wine_version.stdout }}"

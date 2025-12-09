@@ -80,7 +80,7 @@
       Group={{ games_cod_5_server_installed__group_name }}
       WorkingDirectory={{ games_cod_5_server_installed__directory }}
       Environment="LD_LIBRARY_PATH={{ games_cod_5_server_installed__ld_library_path_string }}"
-      ExecStart={{ games_cod_5_server_installed__directory }}/codwaw_lnxded +set dedicated {{ item.dedicated }} +set net_port {{ item.port }} +set loc_language 2 +set sv_punkbuster 0 +set fs_basepath {{ games_cod_5_server_installed__directory }} +map_rotate +exec {{ item.cfg }} +set ttycon 0
+      ExecStart={{ games_cod_5_server_installed__directory }}/codwaw_lnxded +set dedicated {{ item.dedicated }} +set net_port {{ item.port }} +set loc_language 2 +set sv_punkbuster 0 +set fs_basepath {{ games_cod_5_server_installed__directory }} +exec {{ item.cfg }}  +map_rotate +set ttycon 0
       Type=simple
       KillMode=process
 

@@ -1,0 +1,5 @@
+- name: Set system hostname
+  become: true
+  become_user: root
+  ansible.builtin.hostname:
+    name: "{{ os_network_hostname_set__hostname }}"

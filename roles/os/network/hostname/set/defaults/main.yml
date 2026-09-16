@@ -1,0 +1,1 @@
+os_network_hostname_set__hostname: "{{ dafrk__os.network.public_ipv4.hostname }}"

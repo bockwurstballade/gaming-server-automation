@@ -1,19 +1,50 @@
-- name: Ensure Update APT package cache on local control node
+- name: Ensure Update APT package cache on local control node (your workstation) - Might take a while
   delegate_to: localhost
   become: true
   become_user: root
   ansible.builtin.apt:
     update_cache: yes
+    cache_valid_time: 3600
+  run_once: true
+  async: 60      # Maximale Gesamtlaufzeit in Sekunden vor hartem Abbruch
+  poll: 0        # 0 = Task sofort im Hintergrund laufen lassen
+  register: apt_update_job
 
-- name: Upgrade all installed packages
+- name: Wait maximum of 30 seconds for cache update
+  ansible.builtin.async_status:
+    jid: "{{ apt_update_job.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 6     # 6 attempts ...
+  delay: 5       # ... every 5 seconds (6 * 5 = 30 seconds timeout)
+  ignore_errors: true
+  delegate_to: localhost
+  run_once: true
+
+- name: Upgrade all installed packages on local control node (your workstation)
   delegate_to: localhost
   become: true
   become_user: root
   ansible.builtin.apt:
     upgrade: dist
     # This runs "apt-get upgrade -y" (dist ensures a full upgrade)
+  async: 60      # Maximale Gesamtlaufzeit in Sekunden vor hartem Abbruch
+  poll: 0        # 0 = Task sofort im Hintergrund laufen lassen
+  register: apt_update_job
 
-- name: Ensure sshpass is installed on control node via apt-get
+- name: Wait maximum of 30 seconds for cache update
+  ansible.builtin.async_status:
+    jid: "{{ apt_update_job.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 6     # 6 attempts ...
+  delay: 5       # ... every 5 seconds (6 * 5 = 30 seconds timeout)
+  ignore_errors: true
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Ensure sshpass is installed on control node (your workstation) via apt-get
   delegate_to: localhost
   become: true
   become_user: root
@@ -21,6 +52,12 @@
     name: sshpass
     state: present   # Ensures the package is installed
     update_cache: yes  # Updates the apt cache before installing
+
+- name: Ensure "{{ os_ssh_key_uploaded__group }}" group exists
+  ansible.builtin.group:
+    name: "{{ os_ssh_key_uploaded__group }}"
+    state: present
+  become: true
 
 - name: Ensure "{{ os_ssh_key_uploaded__username }}" user exists
   ansible.builtin.user:

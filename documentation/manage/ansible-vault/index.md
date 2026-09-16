@@ -15,7 +15,7 @@ ansible-vault view secrets/secrets.yml
 
 Enter the Ansible Vault password.
 
-# Edit the contnets of your current Ansible Vault
+# Edit the contents of your current Ansible Vault
 
 Navigate to the main directory of the Project
 

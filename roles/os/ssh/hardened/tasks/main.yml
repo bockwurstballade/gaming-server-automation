@@ -13,7 +13,6 @@
       - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
       - { regexp: '^PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
       - { regexp: '^ChallengeResponseAuthentication', line: 'ChallengeResponseAuthentication no' }
-    notify: Restart SSH
 
   - name: Harden SSH - Ensure secure ciphers, MACs, and KexAlgorithms
     ansible.builtin.blockinfile:
@@ -42,7 +41,7 @@
       enabled: yes
     when: os_ssh_hardened__use_systemd
 
-  - name: Ensure SSH service is enabled and started (service)
+  - name: Ensure SSH service is enabled and restarted (service)
     service:
       name: "{{ os_ssh_hardened__ssh_service_name }}"
       state: restarted

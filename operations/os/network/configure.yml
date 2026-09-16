@@ -16,5 +16,6 @@
     wine_package: winehq-stable
     debian_codename: bookworm
   roles:
+    - roles/os/network/hostname/set
     - roles/os/network/hosts/set
     - roles/os/network/resolv.conf/set

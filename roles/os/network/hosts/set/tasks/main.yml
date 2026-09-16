@@ -20,5 +20,5 @@
       ansible.builtin.lineinfile:
         path: /etc/hosts
         regexp: '^92\.42\.45\.192\s+'
-        line: "{{  }} {{ os_network_hosts_set__short_fqhn }} {{ os_network_hosts_set__short_hostname }}"
+        line: "{{ os_network_hosts_set__ipv4_address }} {{ os_network_hosts_set__short_fqhn }} {{ os_network_hosts_set__short_hostname }}"
         state: present

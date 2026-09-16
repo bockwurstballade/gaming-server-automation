@@ -4,12 +4,13 @@
 # Enter SSH root password...
 # Execute the playbook:
 # cd ~/ansible
-#  ansible-playbook -i inventory/inventory.yml -u root --ask-vault-pass operations/os/ssh/upload_key.yml
+#  ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory/inventory.yml -u root --ask-vault-pass operations/os/ssh/upload_key.yml
 - hosts: all
   vars_files:
-    - /home/dafrk/ansible/secrets/secrets.yml  # Explicitly include the vault file
+  # relative paths (e. g. ./secrets/secrets.yml) must be specified from the perspective of this file upload_key.yml.
+    - ../../../secrets/secrets.yml  # Explicitly include the vault file
   vars:
     ansible_ssh_pass: "{{ root_os_password }}"
-    ansible_become_pass: "{{ local_become_password }}"
+    ansible_become_pass: "{{ dafrk__local_password }}"
   roles:
     - roles/os/ssh/key_uploaded

@@ -4,19 +4,18 @@
     regexp: '^#?Port\s+\d+'
     line: 'Port {{ os_ssh_port_changed__port }}'
     state: present
-  notify: Restart SSH
 
-- name: Ensure SSH service is enabled and started (systemd)
+- name: Ensure SSH service is enabled and restarted (systemd)
   systemd:
-    name: "{{ sos_ssh_port_changed__ssh_service_name}}"
-    state: started
+    name: "{{ os_ssh_port_changed__ssh_service_name}}"
+    state: restarted
     enabled: yes
   when: os_ssh_port_changed__use_systemd
 
-- name: Ensure SSH service is enabled and started (service)
+- name: Ensure SSH service is enabled and restarted (service)
   service:
     name: "{{ os_ssh_port_changed__ssh_service_name }}"
-    state: started
+    state: restarted
     enabled: yes
   when: not os_ssh_port_changed__use_systemd
 

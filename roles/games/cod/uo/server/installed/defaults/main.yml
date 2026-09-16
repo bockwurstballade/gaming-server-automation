@@ -62,9 +62,6 @@ games_cod_uo_server_installed__templates:
   - description: "automatically loaded mp default config"
     directory: "{{ games_cod_uo_server_installed__directory }}/main/"
     file_name: "autoexec_mp.cfg"
-  - description: "Main server config"
-    directory: "{{ games_cod_uo_server_installed__directory }}/main/"
-    file_name: "server.cfg"
 ## Archives
 games_cod_uo_server_installed__archives:
   - description: "Legacy gcc libraries"
@@ -95,8 +92,102 @@ games_cod_uo_server_installed__archives:
 # Server settings:
 games_cod_uo_server_installed__port: 28980
 games_cod_uo_server_installed__sv_hostname: "Baereneule COD UO"
-games_cod1_server_installed__admin: Baereneule
+games_cod_uo_server_installed__admin: "{{ dafrk__cod_uo_server.admin }}"
 games_cod_uo_server_installed__motd: "Sons of Lanarchy"
 games_cod_uo_server_installed__rcon_password: "{{ rcon_password }}"
 games_cod_uo_server_installed__server_password: "{{ server_password }}"
 games_cod_uo_server_installed__server_max_players: 32
+
+# Server instances
+dafrk_coduo_server_instances:
+  - name: "Main COD UO Server (Internet, Public)"
+    type: dm
+    cfg: server
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduo.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28980
+    password: ""
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - Main Server"
+    dedicated: 2
+  - name: "DM FFA Private (Internet, Password-protected)"
+    type: dm
+    cfg: dm_private
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduodm-private.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28981
+    password: "{{ server_password }}"
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - DeathMatch Private"
+    dedicated: 2
+  - name: "DM FFA Public (Internet, Public)"
+    type: dm
+    cfg: dm_public
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduodm.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28982
+    password: ""
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - DeathMatch Public"
+    dedicated: 2
+  - name: "TDM Private (Internet, Password-protected)"
+    type: tdm
+    cfg: tdm_private
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduotdm-private.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28983
+    password: "{{ server_password }}"
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - Team DeathMatch Private"
+    dedicated: 2
+  - name: "TDM Public (Internet, Public)"
+    type: tdm
+    cfg: tdm_public
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduotdm.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28984
+    password: ""
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - Team DeathMatch Public"
+    dedicated: 2
+  - name: "SD Private (Internet, Password-protected)"
+    type: sd
+    cfg: sd_private
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduosd-private.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28985
+    password: "{{ server_password }}"
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - Search and Destroy Private"
+    dedicated: 2
+  - name: "SD Public (Internet, Public)"
+    type: sd
+    cfg: sd_public
+    ip: "{{ dafrk__os.network.public_ipv4.address }}"
+    hostname: "coduosd.sons-of-lan-archy.de"
+    admin: "{{ dafrk__cod_uo_server.admin }}"
+    port: 28986
+    password: ""
+    rcon_password: "{{ rcon_password }}"
+    max_players: 32
+    motd: "voice.sons-of-lan-archy.de"
+    service_description: "Call of Duty United Offensive - Search and Destroy Public"
+    dedicated: 2

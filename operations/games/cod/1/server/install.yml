@@ -7,7 +7,7 @@
 # ansible-playbook -i inventory/inventory.yml --ask-vault-pass operations/games/cod/1/server/install.yml
 - hosts: all
   vars_files:
-    - /home/dafrk/ansible/gaming-server-automation/secrets/secrets.yml  # Explicitly include the vault file
+    - ../../../../../secrets/secrets.yml  # Explicitly include the vault file
   vars:
     ansible_become_pass: "{{ dafrk__local_password }}"
     ansible_port: "{{ dafrk__os.ssh.port | default(27001) }}"

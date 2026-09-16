@@ -12,3 +12,17 @@ The currently active instances from `dafrk_cod1_server_instances` are:
 | SD (Internet, Password-protected, No Serial-Check) | Search and Destroy | 28971 |
 | SD (Internet, Public, No Serial-Check) | Search and Destroy | 28973 |
 
+## Call of Duty: United Offensive Servers
+
+The currently active instances from `dafrk_coduo_server_instances` are:
+
+| Instance name | Mode | Port |
+| --- | --- | ---: |
+| Main COD UO Server (Internet, Public) | Deathmatch | 28980 |
+| DM FFA Private (Internet, Password-protected) | Deathmatch | 28981 |
+| DM FFA Public (Internet, Public) | Deathmatch | 28982 |
+| TDM Private (Internet, Password-protected) | Team Deathmatch | 28983 |
+| TDM Public (Internet, Public) | Team Deathmatch | 28984 |
+| SD Private (Internet, Password-protected) | Search and Destroy | 28985 |
+| SD Public (Internet, Public) | Search and Destroy | 28986 |
+

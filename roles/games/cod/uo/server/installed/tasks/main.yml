@@ -61,14 +61,47 @@
     utils_os_file_template_enforced__group: "{{ games_cod_uo_server_installed__group_name }}"
   loop: "{{ games_cod_uo_server_installed__templates }}"
 
-- name: "Create systemd service file for {{ games_cod1_server_installed__service_name }}"
+- name: Enforce individual instance cfg templates
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: templates/games/coduo/main/server_instance.cfg.j2
+    dest: "{{ (games_cod_uo_server_installed__server_main, item.cfg + '.cfg') | ansible.builtin.path_join }}"
+    owner: "{{ games_cod_uo_server_installed__user_name }}"
+    group: "{{ games_cod_uo_server_installed__group_name }}"
+    mode: '0644'
+    backup: yes
+  loop: "{{ dafrk_coduo_server_instances }}"
+
+- name: Ensure UO compatibility directory exists
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    path: "{{ (games_cod_uo_server_installed__directory, 'uo') | ansible.builtin.path_join }}"
+    state: directory
+    owner: "{{ games_cod_uo_server_installed__user_name }}"
+    group: "{{ games_cod_uo_server_installed__group_name }}"
+    mode: '0755'
+
+- name: Link UO server.cfg to the main instance configuration
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    src: "{{ (games_cod_uo_server_installed__server_main, 'server.cfg') | ansible.builtin.path_join }}"
+    dest: "{{ (games_cod_uo_server_installed__directory, 'uo', 'server.cfg') | ansible.builtin.path_join }}"
+    state: link
+    owner: "{{ games_cod_uo_server_installed__user_name }}"
+    group: "{{ games_cod_uo_server_installed__group_name }}"
+    force: true
+
+- name: Create systemd service files for CoD UO instances
   become: true
   become_user: root
   ansible.builtin.copy:
-    dest: /etc/systemd/system/{{ games_cod_uo_server_installed__service_name }}.service
+    dest: /etc/systemd/system/coduo_{{ item.cfg }}.service
     content: |
       [Unit]
-      Description={{ games_cod_uo_server_installed__service_description }}
+      Description={{ item.service_description }}
       After=network.target
 
       [Service]
@@ -76,7 +109,7 @@
       Group={{ games_cod_uo_server_installed__group_name }}
       WorkingDirectory={{ games_cod_uo_server_installed__directory }}
       Environment="LD_LIBRARY_PATH={{ games_cod_uo_server_installed__ld_library_path_string }}"
-      ExecStart={{ (games_cod_uo_server_installed__directory, 'coduo_lnxded') | ansible.builtin.path_join }} +set dedicated 2 +set net_port {{ games_cod_uo_server_installed__port }} +set fs_basepath {{ games_cod_uo_server_installed__directory }} +exec server.cfg +set ttycon 0
+      ExecStart={{ (games_cod_uo_server_installed__directory, 'coduo_lnxded') | ansible.builtin.path_join }} +set dedicated {{ item.dedicated }} +set ttycon 0 +set net_port {{ item.port }} +set fs_basepath {{ games_cod_uo_server_installed__directory }} +rconPassword "{{ item.rcon_password }}" +exec {{ item.cfg }}.cfg
       Restart=on-failure
       Type=simple
       KillMode=process
@@ -86,3 +119,4 @@
     owner: root
     group: root
     mode: '0644'
+  loop: "{{ dafrk_coduo_server_instances }}"

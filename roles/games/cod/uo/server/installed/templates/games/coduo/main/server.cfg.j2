@@ -7,10 +7,10 @@ wait 5
 set pb_sv_guidrelax 7
 
 //IP des Servers
-set net_ip "{{ games_cod_uo_server_installed__public_ip }}"
+set net_ip "{{ item.ip }}"
 
 //Port des Servers
-set net_port "{{ games_cod_uo_server_installed__port }}"
+set net_port "{{ item.port }}"
 
 //Spiel loggen ( 0 = aus 1 = an )
 set logfile "1"
@@ -25,10 +25,10 @@ set g_log "games_mp.log"
 //Oeffentliche Server-Informationen:
 
 //Name des Servers
-set sv_hostname "{{ games_cod_uo_server_installed__sv_hostname }}"
+set sv_hostname "{{ item.hostname }}"
 
 //Administrator des Servers
-sets .Admin "{{ games_cod1_server_installed__admin }}"
+sets .Admin "{{ item.admin }}"
 
 //E-Mail-Adresse des Admins
 sets .Email ""
@@ -43,18 +43,18 @@ sets .Url ""
 sets .Location "Germany"
 
 //Begruessung
-set scr_motd "{{ games_cod_uo_server_installed__motd }}"
+set scr_motd "{{ item.motd }}"
 
 //***
 
 //Passwoerter
 
 //RCON-Passwort
-set rconPassword "{{ games_cod_uo_server_installed__rcon_password }}"
+set rconPassword "{{ item.rcon_password }}"
 
 //NUR EINS VON BEIDEN VERWENDEN!
 //Server-Passwort
-set g_password "{{ games_cod_uo_server_installed__server_password }}"
+set g_password "{{ item.password }}"
 
 //Privates Passwort
 set sv_privatepassword ""
@@ -64,7 +64,7 @@ set sv_privatepassword ""
 //Allgemeine Servereinstellungen:
 
 //Maximale Spieleranzahl
-set sv_maxclients "32"
+set sv_maxclients "{{ item.max_players }}"
 
 //Private Clients
 set sv_privateClients ""

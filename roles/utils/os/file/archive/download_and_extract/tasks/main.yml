@@ -65,3 +65,12 @@
         owner: "{{ utils_os_file_archive_download_and_extract__user }}"
         group: "{{ utils_os_file_archive_download_and_extract__group }}"
         recurse: true
+
+  always:
+    - name: Remove temporary archive download directory
+      ansible.builtin.file:
+        path: "{{ utils_os_file_archive_download_and_extract__temp_dir.path }}"
+        state: absent
+      when:
+        - utils_os_file_archive_download_and_extract__temp_dir is defined
+        - utils_os_file_archive_download_and_extract__temp_dir.path is defined

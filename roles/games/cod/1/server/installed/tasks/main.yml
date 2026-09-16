@@ -61,6 +61,17 @@
     utils_os_file_template_enforced__group: "{{ games_cod1_server_installed__group_name }}"
   loop: "{{ games_cod1_server_installed__templates }}"
 
+- name: Enforce home config template
+  become: true
+  become_user: root
+  ansible.builtin.template:
+    src: templates/games/cod1/main/config_mp.cfg.j2
+    dest: "{{ (games_cod1_server_installed__home_directory, 'main', 'config_mp.cfg') | ansible.builtin.path_join }}"
+    owner: "{{ games_cod1_server_installed__user_name }}"
+    group: "{{ games_cod1_server_installed__group_name }}"
+    mode: '0640'
+    backup: yes
+
 - name: Enforce individual Instance cfg Templates
   become: true
   become_user: root
@@ -80,7 +91,7 @@
     dest: /etc/systemd/system/cod1_{{ item.cfg }}.service
     content: |
       [Unit]
-      Description=Call of Duty 1 Dedicated Server
+      Description=item.service_description
       After=network.target
 
       [Service]
@@ -126,7 +137,7 @@
 
 - name: Disable CD Key Check if disabled
   ansible.builtin.include_role:
-    name: roles/games/cod1/server/serial_check_disabled
+    name: roles/games/cod/1/server/serial_check_disabled
   vars:
     games_cod1_server_serial_check_disabled__cd_check: "{{ item.cd_check }}"
     games_cod1_server_serial_check_disabled__port: "{{ item.port }}"

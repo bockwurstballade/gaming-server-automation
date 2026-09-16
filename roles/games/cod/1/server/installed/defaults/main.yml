@@ -47,9 +47,6 @@ games_cod1_server_installed__templates:
   - description: "Overall game config"
     directory: "{{ games_cod1_server_installed__directory }}/main/"
     file_name: "config_mp.cfg"
-  - description: "Overall game config for home"
-    directory: "/home/cod1/.callofduty/main/"
-    file_name: "config_mp.cfg"
 
 ## COD1 Linux Server Base
 games_cod1_server_installed__directory: "{{ dafrk__cod_server.directories.cod_server.path | default('/games/cod1/') }}"

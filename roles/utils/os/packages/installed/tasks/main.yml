@@ -8,15 +8,34 @@
       changed_when: false
       check_mode: false # Always run this check, even in check mode
 
-    - name: Add non-free packages
-      ansible.builtin.command:
-        cmd: >-
-          apt-add-repository
-          non-free
-          -y
-      register: repoadd
-      changed_when: repoadd.changed
-      failed_when: repoadd.failed
+    - name: Ensure GPG is available for repository management
+      ansible.builtin.apt:
+        name: gpg
+        state: present
+        update_cache: yes
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
+    - name: Ensure Debian non-free repositories are enabled
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb http://deb.debian.org/debian
+          {{ ansible_distribution_release }}
+          main contrib non-free non-free-firmware
+        filename: gaming-server-non-free
+        state: present
+        update_cache: yes
+      when: ansible_distribution == 'Debian'
+
+    - name: Ensure Ubuntu multiverse repositories are enabled
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb http://archive.ubuntu.com/ubuntu
+          {{ ansible_distribution_release }}
+          main restricted universe multiverse
+        filename: gaming-server-multiverse
+        state: present
+        update_cache: yes
+      when: ansible_distribution == 'Ubuntu'
 
     - name: Add i386 architecture if required by packages
       ansible.builtin.command: dpkg --add-architecture i386
@@ -25,7 +44,6 @@
         - (utils_os_packages_installed__packages | select('search', ':i386$') | list | length) > 0
         # Condition 2: The architecture isn't already enabled
         - "'i386' not in foreign_architectures.stdout"
-      notify: Update APT cache # Good practice after adding an architecture
       register: dpkg_result
       changed_when: dpkg_result.changed
 

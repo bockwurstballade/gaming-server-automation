@@ -1,10 +1,9 @@
 - name: Ensure required software for archive extraction is installed
-  ansible.builtin.include_role:
-    name: roles/utils/os/software/installed
-  vars:
-    utils_os_software_installed__name: "{{ item }}"
-  loop:
-    - unzip
+  become: true
+  become_user: root
+  ansible.builtin.package:
+    name: unzip
+    state: present
 
 - name: Perform actions as user root
   become: true

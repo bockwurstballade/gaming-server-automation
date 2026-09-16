@@ -109,7 +109,7 @@
       Group={{ games_cod_uo_server_installed__group_name }}
       WorkingDirectory={{ games_cod_uo_server_installed__directory }}
       Environment="LD_LIBRARY_PATH={{ games_cod_uo_server_installed__ld_library_path_string }}"
-      ExecStart={{ (games_cod_uo_server_installed__directory, 'coduo_lnxded') | ansible.builtin.path_join }} +set dedicated {{ item.dedicated }} +set ttycon 0 +set net_port {{ item.port }} +set fs_basepath {{ games_cod_uo_server_installed__directory }} +rconPassword "{{ item.rcon_password }}" +exec {{ item.cfg }}.cfg
+      ExecStart={{ (games_cod_uo_server_installed__directory, 'coduo_lnxded') | ansible.builtin.path_join }} +set dedicated {{ item.dedicated }} +set ttycon 0 +set net_port {{ item.port }} +set fs_basepath {{ games_cod_uo_server_installed__directory }} +exec {{ item.cfg }}.cfg
       Restart=on-failure
       Type=simple
       KillMode=process

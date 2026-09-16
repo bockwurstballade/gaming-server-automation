@@ -1,0 +1,3 @@
+os_network_hosts_set__short_hostname: "{{ dafrk__os.network.public_ipv4.hostname | default('') }}"
+os_network_hosts_set__short_fqhn: "{{ dafrk__os.network.public_ipv4.fqhn | default('') }}"
+os_network_hosts_set__ipv4_address: "{{ dafrk__os.network.public_ipv4.address | default('') }}"

@@ -1,0 +1,17 @@
+- name: Perform as root
+  become: true
+  become_user: root
+  block:
+    - name: Configure Cloudflare nameserver in /etc/resolv.conf
+      ansible.builtin.lineinfile:
+        path: /etc/resolv.conf
+        regexp: '^nameserver 1\.1\.1\.1'
+        line: 'nameserver 1.1.1.1'
+        state: present
+
+    - name: Add Google fallback nameserver to /etc/resolv.conf
+      ansible.builtin.lineinfile:
+        path: /etc/resolv.conf
+        regexp: '^nameserver 8\.8\.8\.8'
+        line: 'nameserver 8.8.8.8'
+        state: present

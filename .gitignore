@@ -2,6 +2,6 @@ secrets/
 secrets/*
 inventory/
 inventory/*
-roles/games/cod2/libcod_installed/
-roles/games/cod2/serial_check_disabled/
-roles/games/cod1/serial_check_disabled/
+roles/games/cod/2/libcod_installed/
+roles/games/cod/2/serial_check_disabled/
+roles/games/cod/1/serial_check_disabled/

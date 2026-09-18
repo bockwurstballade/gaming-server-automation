@@ -7,7 +7,7 @@
 # Enter SSH root password...
 # Execute the playbook:
 # cd ~/ansible
-# ansible-playbook -i inventory/inventory.yml --ask-vault-pass operations/games/cod2/server/install.yml
+# ansible-playbook -i inventory/inventory.yml --ask-vault-pass operations/games/cod/2/server/install.yml
 - hosts: all
   vars_files:
     - ../../../../../secrets/secrets.yml  # Explicitly include the vault file

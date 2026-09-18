@@ -11,6 +11,5 @@
   vars:
     ansible_become_pass: "{{ dafrk__local_password }}"
     ansible_port: "{{ dafrk__os.ssh.port | default(27001) }}"
-    action: restarted
   roles:
-    - roles/games/cod2/server/service
+    - roles/games/cod/2/server/service

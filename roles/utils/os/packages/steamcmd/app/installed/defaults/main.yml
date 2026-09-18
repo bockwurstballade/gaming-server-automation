@@ -5,6 +5,7 @@ utils_os_packages_steamcmd_app_installed__packages:
 utils_os_packages_steamcmd_app_installed__app_mapping:
 # https://developer.valvesoftware.com/wiki/Steam_Application_IDs
 # https://steamdb.info/apps/
+# https://developer.valvesoftware.com/wiki/Dedicated_Servers_List
   cs_server: 90
   ql_server: 349090
   hl2_server: 232370

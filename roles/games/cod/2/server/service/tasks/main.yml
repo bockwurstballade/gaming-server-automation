@@ -8,4 +8,4 @@
 
 - name: Fetch Service Status
   ansible.builtin.include_role:
-    name: roles/games/cod2/server/status
+    name: roles/games/cod/2/server/status
